@@ -16,7 +16,6 @@ public class PlayerWeapon : UdonSharpBehaviour
     [Header("Bow")]
     public Bow bow;
     public VRBowGrip vrBowGrip;
-    public QuiverRoot quiver;
 
     [UdonSynced] private Weapon currentWeapon = Weapon.NONE;
 

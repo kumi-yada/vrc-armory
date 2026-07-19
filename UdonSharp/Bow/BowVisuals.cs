@@ -41,7 +41,8 @@ public class BowVisuals : UdonSharpBehaviour
     void Update()
     {
         var dist = Mathf.Lerp(arrowStartDistance, arrowEndDistance, pullDistance);
-        arrowVisual.transform.localPosition = new Vector3(0f, dist, 0f);
+        var pos = arrowVisual.transform.localPosition;
+        arrowVisual.transform.localPosition = new Vector3(dist, pos.y, pos.z);
         bowMesh.SetBlendShapeWeight(0, pullDistance * 100f);
     }
 

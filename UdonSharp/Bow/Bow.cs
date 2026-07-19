@@ -13,7 +13,7 @@ public class Bow : SmartObjectSyncListener
     [SerializeField] private DesktopBowGrip desktopGrip;
     [SerializeField] private VRCObjectPool arrowPool;
     [SerializeField] private BowVisuals bowVisuals;
-    [SerializeField] private QuiverRoot quiverRoot;
+    [SerializeField] private GameObject quiver;
     [SerializeField] private SmartObjectSync sync;
     [SerializeField] private float minForceToShoot = 0.2f;
     [SerializeField] private float arrowSpeed = 30f;
@@ -61,7 +61,7 @@ public class Bow : SmartObjectSyncListener
     public void SetActive(bool active)
     {
         gameObject.SetActive(active);
-        quiverRoot.gameObject.SetActive(active);
+        quiver.SetActive(active);
 
         var owner = Networking.GetOwner(gameObject);
         vrBowGrip.gameObject.SetActive(owner.IsUserInVR() && active);
@@ -159,9 +159,9 @@ public class Bow : SmartObjectSyncListener
     {
         if (!Networking.IsOwner(gameObject)) return;
 
-        var force = bowVisuals.GetPullDistance();
         if (!bowVisuals.IsLoaded()) return;
 
+        var force = bowVisuals.GetPullDistance();
         if (force < minForceToShoot) return;
 
         GameObject spawned = arrowPool.TryToSpawn();
