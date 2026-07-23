@@ -140,7 +140,6 @@ public class Bow : SmartObjectSyncListener
         vrBowGrip.Release();
     }
 
-
     public override void OnPickupUseDown()
     {
         if (!Networking.IsOwner(gameObject) || Networking.LocalPlayer.IsUserInVR()) return;
