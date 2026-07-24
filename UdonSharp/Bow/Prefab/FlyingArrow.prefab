@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5117261373684324826}
   - component: {fileID: 5184422637369307512}
   - component: {fileID: 5176469604627764292}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: FlyingArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,7 +59,6 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 5117261373684324826}
   returnDelay: 5
-  weaponScale: {fileID: 0}
 --- !u!114 &5117261373684324826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,6 +207,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Arrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 483e612dcd81e76d294ee92201940396,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -9,48 +9,36 @@ using VRC.Udon.Common.Interfaces;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class FlyingArrow : UdonSharpBehaviour
 {
-    [SerializeField] private float returnDelay = 5f;
     private Rigidbody rb;
 
-    // [UdonSynced] private Vector3 spawnPosition;
-    // [UdonSynced] private Vector3 direction;
-    // [UdonSynced] private float startSpeed;
     private bool hasHit = false;
+    private bool stuck = false;
+    public bool IsStuck => stuck;
+    private Transform stuckTarget;
+    private Vector3 stuckLocalPos;
+    private Quaternion stuckLocalRot;
 
     private VRCObjectPool pool;
-    // private bool isInitialized = false;
-    // private GameObject hitObject;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    // public override void OnDeserialization()
-    // {
-    //     Initialize();
-    //     if (hasHit)
-    //     {
-    //         rb.isKinematic = true;
-    //         // if (hitObject != null)
-    //         // {
-    //         //     transform.SetParent(hitObject.transform);
-    //         // }
-    //     }
-    // }
-
-    // private void Initialize()
-    // {
-    //     if (isInitialized) return;
-    //     if (rb == null) rb = GetComponent<Rigidbody>();
-
-    //     isInitialized = true;
-    //     transform.SetPositionAndRotation(spawnPosition, Quaternion.LookRotation(direction));
-    //     rb.velocity = direction * startSpeed;
-    // }
-
     private void LateUpdate()
     {
+        if (stuck)
+        {
+            if (stuckTarget != null)
+            {
+                transform.SetPositionAndRotation(
+                    stuckTarget.TransformPoint(stuckLocalPos),
+                    stuckTarget.rotation * stuckLocalRot
+                );
+            }
+            return;
+        }
+
         if (!hasHit && rb != null && rb.velocity.sqrMagnitude > 0.0001f)
         {
             transform.rotation = Quaternion.LookRotation(rb.velocity);
@@ -59,26 +47,40 @@ public class FlyingArrow : UdonSharpBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        OnHit(collision.collider);
-        // hitObject = collision.gameObject;
+        Vector3 hitPoint = collision.contacts[0].point;
+        OnHit(collision.collider, hitPoint);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        OnHit(other);
-        // hitObject = other.gameObject;
+        OnHit(other, transform.position);
     }
 
-    private void OnHit(Collider other)
+    private void OnHit(Collider other, Vector3 hitPoint)
     {
         if (hasHit) return;
         hasHit = true;
-        rb.isKinematic = true;
+
+        Stick(other, hitPoint);
 
         if (!Networking.IsOwner(gameObject)) return;
         Debug.Log("Hit: " + other.name);
-        // SendCustomEventDelayedSeconds(nameof(ReturnToPool), returnDelay);
-        ReturnToPool();
+    }
+
+    private void Stick(Collider other, Vector3 hitPoint)
+    {
+        stuck = true;
+
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.isKinematic = true;
+
+        stuckTarget = other.attachedRigidbody != null
+            ? other.attachedRigidbody.transform
+            : other.transform;
+
+        stuckLocalPos = stuckTarget.InverseTransformPoint(hitPoint);
+        stuckLocalRot = Quaternion.Inverse(stuckTarget.rotation) * transform.rotation;
     }
 
     public void ApplyForce(Vector3 spawnPosition, Vector3 direction, float speed, VRCObjectPool pool)
@@ -104,13 +106,17 @@ public class FlyingArrow : UdonSharpBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         hasHit = false;
+        stuck = false;
+        stuckTarget = null;
         rb.isKinematic = false;
         transform.SetPositionAndRotation(spawnPosition, Quaternion.LookRotation(force));
         rb.velocity = force;
     }
 
-    private void ReturnToPool()
+    public void ReturnToPool()
     {
+        stuck = false;
+        stuckTarget = null;
         if (pool != null)
         {
             pool.Return(gameObject);

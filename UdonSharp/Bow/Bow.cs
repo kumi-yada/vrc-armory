@@ -162,6 +162,21 @@ public class Bow : SmartObjectSyncListener
         ShootArrow();
     }
 
+    private FlyingArrow FindStuckArrow()
+    {
+        for (int i = 0; i < arrowPool.transform.childCount; i++)
+        {
+            var child = arrowPool.transform.GetChild(i);
+            if (!child.gameObject.activeSelf) continue;
+            var arrow = child.GetComponent<FlyingArrow>();
+            if (arrow != null && arrow.IsStuck)
+            {
+                return arrow;
+            }
+        }
+        return null;
+    }
+
     public void ShootArrow()
     {
         if (!Networking.IsOwner(gameObject)) return;
@@ -172,7 +187,17 @@ public class Bow : SmartObjectSyncListener
         if (force < minForceToShoot) return;
 
         GameObject spawned = arrowPool.TryToSpawn();
-        if (!Utilities.IsValid(spawned)) return;
+        if (!Utilities.IsValid(spawned))
+        {
+            var stuck = FindStuckArrow();
+            if (stuck != null)
+            {
+                stuck.ReturnToPool();
+                spawned = arrowPool.TryToSpawn();
+                if (!Utilities.IsValid(spawned)) return;
+            }
+            else return;
+        }
 
         var appliedForce = Mathf.Lerp(0f, arrowSpeed, force);
         var shootDir = vrBowGrip.gameObject.activeSelf ? (transform.position - vrBowGrip.transform.position).normalized : transform.forward;
