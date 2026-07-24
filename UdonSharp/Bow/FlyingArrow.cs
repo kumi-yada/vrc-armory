@@ -52,14 +52,11 @@ public class FlyingArrow : UdonSharpBehaviour
     //     rb.velocity = direction * startSpeed;
     // }
 
-    private void Update()
+    private void LateUpdate()
     {
-        if (!hasHit)
+        if (!hasHit && rb != null && rb.velocity.sqrMagnitude > 0.0001f)
         {
-            if (rb != null && rb.velocity != Vector3.zero)
-            {
-                transform.rotation = Quaternion.LookRotation(rb.velocity);
-            }
+            transform.rotation = Quaternion.LookRotation(rb.velocity);
         }
     }
 
@@ -116,6 +113,7 @@ public class FlyingArrow : UdonSharpBehaviour
     public void Fire(Vector3 spawnPosition, Vector3 force, float avatarScale)
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
+        hasHit = false;
         rb.isKinematic = false;
         FindScaleComponent();
         if (Utilities.IsValid(weaponScale)) weaponScale.ApplyScale(avatarScale);

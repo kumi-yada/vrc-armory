@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7834097919127046179}
   - component: {fileID: 6061156338635432324}
   - component: {fileID: 4730584387479509650}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: QuiverArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,6 +57,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 6061156338635432324}
+  weaponScale: {fileID: 0}
 --- !u!114 &6061156338635432324
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,6 +169,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Arrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 483e612dcd81e76d294ee92201940396,
+        type: 3}
+      propertyPath: m_Layer
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

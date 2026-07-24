@@ -59,6 +59,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 5117261373684324826}
   returnDelay: 5
+  weaponScale: {fileID: 0}
 --- !u!114 &5117261373684324826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,7 +126,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8208
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
