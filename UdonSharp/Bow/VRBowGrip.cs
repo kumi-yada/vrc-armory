@@ -11,6 +11,7 @@ public class VRBowGrip : UdonSharpBehaviour
 
     [SerializeField] private Bow bow;
     [SerializeField] private GameObject followTarget;
+    [SerializeField] private WeaponAutoScale weaponScale;
     [SerializeField] private float maxPullDistance = 1.0f;
     [SerializeField] private float handYOffset = 0.1f;
     [SerializeField] private AimConstraint aimConstraint;
@@ -34,7 +35,7 @@ public class VRBowGrip : UdonSharpBehaviour
             var owner = Networking.GetOwner(gameObject);
             var bonePos = owner.GetBonePosition((HumanBodyBones)pullingBone);
             var boneRot = owner.GetBoneRotation((HumanBodyBones)pullingBone);
-            var avatarScale = bow.GetAvatarScale();
+            var avatarScale = GetAvatarScale();
             transform.position = bonePos + boneRot * Vector3.up * handYOffset * avatarScale;
 
             var distance = Vector3.Distance(transform.position, followTarget.transform.position);
@@ -102,5 +103,11 @@ public class VRBowGrip : UdonSharpBehaviour
         pullingBone = -1001;
         aimConstraint.constraintActive = false;
         RequestSerialization();
+    }
+
+    private float GetAvatarScale()
+    {
+        if (!Utilities.IsValid(weaponScale)) weaponScale = GetComponent<WeaponAutoScale>();
+        return Utilities.IsValid(weaponScale) ? weaponScale.GetCurrentScale() : 1f;
     }
 }

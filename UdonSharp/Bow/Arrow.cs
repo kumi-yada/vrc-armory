@@ -8,17 +8,10 @@ using VRC.Udon.Common;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class Arrow : UdonSharpBehaviour
 {
-    [SerializeField] private WeaponAutoScale weaponScale;
-
     private bool isInEditor;
     private VRCObjectPool pool;
 
     [UdonSynced] private int bone = -1001;
-
-    void Start()
-    {
-        FindScaleComponent();
-    }
 
     public override void InputGrab(bool value, UdonInputEventArgs args)
     {
@@ -36,7 +29,6 @@ public class Arrow : UdonSharpBehaviour
         Vector3 bonePos = owner.GetBonePosition((HumanBodyBones)bone);
         Quaternion boneRot = owner.GetBoneRotation((HumanBodyBones)bone);
         transform.SetPositionAndRotation(bonePos, boneRot);
-        ApplyOwnerScale(owner);
     }
 
     public void Initialize(HumanBodyBones handBone, VRCObjectPool pool)
@@ -45,21 +37,7 @@ public class Arrow : UdonSharpBehaviour
 
         bone = (int)handBone;
         this.pool = pool;
-        ApplyOwnerScale(Networking.GetOwner(gameObject));
         RequestSerialization();
-    }
-
-    private void ApplyOwnerScale(VRCPlayerApi owner)
-    {
-        if (!Utilities.IsValid(owner)) return;
-
-        FindScaleComponent();
-        if (Utilities.IsValid(weaponScale)) weaponScale.ApplyForOwner(owner);
-    }
-
-    private void FindScaleComponent()
-    {
-        if (!Utilities.IsValid(weaponScale)) weaponScale = GetComponent<WeaponAutoScale>();
     }
 
     public void ReturnToQuiver()
