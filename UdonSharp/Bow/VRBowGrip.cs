@@ -34,10 +34,11 @@ public class VRBowGrip : UdonSharpBehaviour
             var owner = Networking.GetOwner(gameObject);
             var bonePos = owner.GetBonePosition((HumanBodyBones)pullingBone);
             var boneRot = owner.GetBoneRotation((HumanBodyBones)pullingBone);
-            transform.position = bonePos + boneRot * Vector3.up * handYOffset;
+            var avatarScale = bow.GetAvatarScale();
+            transform.position = bonePos + boneRot * Vector3.up * handYOffset * avatarScale;
 
             var distance = Vector3.Distance(transform.position, followTarget.transform.position);
-            bow.SetPullDistance(distance / maxPullDistance);
+            bow.SetPullDistance(distance / (maxPullDistance * avatarScale));
         }
         else
         {

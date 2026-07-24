@@ -15,19 +15,24 @@ public class Bow : SmartObjectSyncListener
     [SerializeField] private BowVisuals bowVisuals;
     [SerializeField] private GameObject quiver;
     [SerializeField] private SmartObjectSync sync;
+    [SerializeField] private WeaponAutoScale bowScale;
+    [SerializeField] private WeaponAutoScale quiverScale;
     [SerializeField] private float minForceToShoot = 0.2f;
     [SerializeField] private float arrowSpeed = 30f;
 
     private VRCPickup pickup;
+    private float avatarScale = 1f;
 
     void Start()
     {
+        FindScaleComponents();
         pickup = GetComponent<VRCPickup>();
         bowVisuals.SetArrowActive(false);
         bowVisuals.SetPullDistance(0.0f);
         pickup.pickupable = Networking.IsOwner(gameObject);
 
         var owner = Networking.GetOwner(gameObject);
+        ApplyOwnerScale(owner);
         if (owner.IsUserInVR())
         {
             pickup.AutoHold = VRC_Pickup.AutoHoldMode.No;
@@ -56,6 +61,8 @@ public class Bow : SmartObjectSyncListener
 
     public override void OnChangeOwner(SmartObjectSync s, VRCPlayerApi oldOwner, VRCPlayerApi newOwner)
     {
+        if (s != sync) return;
+        ApplyOwnerScale(newOwner);
     }
 
     public void SetActive(bool active)
@@ -64,6 +71,7 @@ public class Bow : SmartObjectSyncListener
         quiver.SetActive(active);
 
         var owner = Networking.GetOwner(gameObject);
+        ApplyOwnerScale(owner);
         vrBowGrip.gameObject.SetActive(owner.IsUserInVR() && active);
         desktopGrip.gameObject.SetActive(!owner.IsUserInVR() && active);
 
@@ -91,6 +99,8 @@ public class Bow : SmartObjectSyncListener
 
     void Update()
     {
+        ApplyOwnerScale(Networking.GetOwner(gameObject));
+
         if (!Networking.IsOwner(gameObject)) return;
 
         if (!Networking.LocalPlayer.IsUserInVR() && Input.GetKeyDown(KeyCode.T))
@@ -117,15 +127,39 @@ public class Bow : SmartObjectSyncListener
         var owner = Networking.GetOwner(gameObject);
         var chestPos = owner.GetBonePosition(HumanBodyBones.Chest);
         var chestRot = owner.GetBoneRotation(HumanBodyBones.Chest);
-        var pos = chestPos + chestRot * Vector3.forward;
+        var pos = chestPos + chestRot * Vector3.forward * avatarScale;
         sync.TeleportTo(pos, chestRot, Vector3.zero, Vector3.zero);
     }
 
     private void StashBow()
     {
         var owner = Networking.GetOwner(gameObject);
+        ApplyOwnerScale(owner);
         var pos = owner.GetBonePosition(HumanBodyBones.Chest);
         sync.TeleportTo(pos, transform.rotation, Vector3.zero, Vector3.zero);
+    }
+
+    public float GetAvatarScale()
+    {
+        return avatarScale;
+    }
+
+    private void ApplyOwnerScale(VRCPlayerApi owner)
+    {
+        if (!Utilities.IsValid(owner)) return;
+
+        FindScaleComponents();
+        if (!Utilities.IsValid(bowScale)) return;
+
+        bowScale.ApplyForOwner(owner);
+        if (Utilities.IsValid(quiverScale)) quiverScale.ApplyScale(bowScale.GetCurrentScale());
+        avatarScale = bowScale.GetCurrentScale();
+    }
+
+    private void FindScaleComponents()
+    {
+        if (!Utilities.IsValid(bowScale)) bowScale = GetComponent<WeaponAutoScale>();
+        if (!Utilities.IsValid(quiverScale) && Utilities.IsValid(quiver)) quiverScale = quiver.GetComponent<WeaponAutoScale>();
     }
 
     public override void OnPickup()
@@ -168,7 +202,7 @@ public class Bow : SmartObjectSyncListener
 
         var appliedForce = Mathf.Lerp(0f, arrowSpeed, force);
         var shootDir = vrBowGrip.gameObject.activeSelf ? (transform.position - vrBowGrip.transform.position).normalized : transform.forward;
-        spawned.GetComponent<FlyingArrow>().ApplyForce(transform.position, shootDir, appliedForce, arrowPool);
+        spawned.GetComponent<FlyingArrow>().ApplyForce(transform.position, shootDir, appliedForce, avatarScale, arrowPool);
         SetLoaded(false);
     }
 

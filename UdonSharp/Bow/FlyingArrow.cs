@@ -10,6 +10,7 @@ using VRC.Udon.Common.Interfaces;
 public class FlyingArrow : UdonSharpBehaviour
 {
     [SerializeField] private float returnDelay = 5f;
+    [SerializeField] private WeaponAutoScale weaponScale;
 
     private Rigidbody rb;
 
@@ -25,6 +26,7 @@ public class FlyingArrow : UdonSharpBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        FindScaleComponent();
     }
 
     // public override void OnDeserialization()
@@ -85,29 +87,38 @@ public class FlyingArrow : UdonSharpBehaviour
         ReturnToPool();
     }
 
-    public void ApplyForce(Vector3 spawnPosition, Vector3 direction, float speed, VRCObjectPool pool)
+    public void ApplyForce(Vector3 spawnPosition, Vector3 direction, float speed, float avatarScale, VRCObjectPool pool)
     {
         if (!Networking.IsOwner(gameObject)) return;
 
         this.pool = pool;
         this.force = direction * speed;
         this.spawn = spawnPosition;
+        this.avatarScale = avatarScale;
         SendCustomEventDelayedFrames(nameof(FireDelayed), 1);
     }
 
     private Vector3 force;
     private Vector3 spawn;
+    private float avatarScale = 1f;
+
+    private void FindScaleComponent()
+    {
+        if (!Utilities.IsValid(weaponScale)) weaponScale = GetComponent<WeaponAutoScale>();
+    }
 
     public void FireDelayed()
     {
-        SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Fire), spawn, force);
+        SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Fire), spawn, force, avatarScale);
     }
 
     [NetworkCallable]
-    public void Fire(Vector3 spawnPosition, Vector3 force)
+    public void Fire(Vector3 spawnPosition, Vector3 force, float avatarScale)
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         rb.isKinematic = false;
+        FindScaleComponent();
+        if (Utilities.IsValid(weaponScale)) weaponScale.ApplyScale(avatarScale);
         transform.SetPositionAndRotation(spawnPosition, Quaternion.LookRotation(force));
         rb.velocity = force;
     }
