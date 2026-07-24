@@ -29,7 +29,14 @@ public class PlayerWeapon : UdonSharpBehaviour
         bow.SetActive(currentWeapon == Weapon.BOW);
     }
 
-    public void SetWeapon()
+    public void SetNone()
+    {
+        currentWeapon = Weapon.NONE;
+        UpdateWeapon();
+        RequestSerialization();
+    }
+
+    public void SetArcher()
     {
         currentWeapon = Weapon.BOW;
         UpdateWeapon();
