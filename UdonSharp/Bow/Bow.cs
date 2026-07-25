@@ -20,6 +20,7 @@ public class Bow : SmartObjectSyncListener
     [SerializeField] private float arrowSpeed = 30f;
 
     private VRCPickup pickup;
+    private int shotCounter;
 
     void Start()
     {
@@ -131,6 +132,7 @@ public class Bow : SmartObjectSyncListener
 
     private void StashBow()
     {
+        SetLoaded(false);
         var owner = Networking.GetOwner(gameObject);
         var pos = owner.GetBonePosition(HumanBodyBones.Chest);
         sync.TeleportTo(pos, transform.rotation, Vector3.zero, Vector3.zero);
@@ -164,17 +166,20 @@ public class Bow : SmartObjectSyncListener
 
     private FlyingArrow FindStuckArrow()
     {
+        FlyingArrow oldest = null;
+        int oldestOrder = int.MaxValue;
         for (int i = 0; i < arrowPool.transform.childCount; i++)
         {
             var child = arrowPool.transform.GetChild(i);
             if (!child.gameObject.activeSelf) continue;
             var arrow = child.GetComponent<FlyingArrow>();
-            if (arrow != null && arrow.IsStuck)
+            if (arrow != null && arrow.IsStuck && arrow.GetShotOrder() < oldestOrder)
             {
-                return arrow;
+                oldest = arrow;
+                oldestOrder = arrow.GetShotOrder();
             }
         }
-        return null;
+        return oldest;
     }
 
     public void ShootArrow()
@@ -201,7 +206,9 @@ public class Bow : SmartObjectSyncListener
 
         var appliedForce = Mathf.Lerp(0f, arrowSpeed, force);
         var shootDir = vrBowGrip.gameObject.activeSelf ? (transform.position - vrBowGrip.transform.position).normalized : transform.forward;
-        spawned.GetComponent<FlyingArrow>().ApplyForce(transform.position, shootDir, appliedForce, arrowPool);
+        var arrow = spawned.GetComponent<FlyingArrow>();
+        arrow.SetShotOrder(shotCounter++);
+        arrow.ApplyForce(transform.position, shootDir, appliedForce, arrowPool);
         SetLoaded(false);
     }
 

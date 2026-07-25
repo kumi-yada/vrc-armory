@@ -20,6 +20,10 @@ public class FlyingArrow : UdonSharpBehaviour
 
     private VRCObjectPool pool;
 
+    private int shotOrder = int.MaxValue;
+    public int GetShotOrder() => shotOrder;
+    public void SetShotOrder(int order) => shotOrder = order;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -108,6 +112,7 @@ public class FlyingArrow : UdonSharpBehaviour
         hasHit = false;
         stuck = false;
         stuckTarget = null;
+        shotOrder = int.MaxValue;
         rb.isKinematic = false;
         transform.SetPositionAndRotation(spawnPosition, Quaternion.LookRotation(force));
         rb.velocity = force;
@@ -117,6 +122,7 @@ public class FlyingArrow : UdonSharpBehaviour
     {
         stuck = false;
         stuckTarget = null;
+        shotOrder = int.MaxValue;
         if (pool != null)
         {
             pool.Return(gameObject);
