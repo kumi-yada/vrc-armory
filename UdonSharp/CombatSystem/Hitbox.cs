@@ -27,6 +27,11 @@ public class Hitbox : UdonSharpBehaviour
             lastHitTime = 0f;
     }
 
+    public void SetDamage(float newDamage)
+    {
+        damage = newDamage;
+    }
+
     public void OnTriggerEnter(Collider other)
     {
         if (!active) return;
