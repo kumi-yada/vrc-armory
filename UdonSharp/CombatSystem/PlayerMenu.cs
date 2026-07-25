@@ -24,6 +24,7 @@ public class PlayerMenu : UdonSharpBehaviour
         localPlayer = Networking.LocalPlayer;
         isInEditor = localPlayer == null;
         canvas.enabled = false;
+        transform.position = new Vector3(0f, -9999f, 0f);
         vrStickWasNeutral = true;
     }
 
@@ -84,6 +85,10 @@ public class PlayerMenu : UdonSharpBehaviour
             var head = localPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
             Vector3 targetPos = head.position + head.rotation * new Vector3(0f, heightOffset, distance);
             transform.SetPositionAndRotation(targetPos, head.rotation);
+        }
+        else
+        {
+            transform.position = new Vector3(0f, -9999f, 0f);
         }
     }
 }
