@@ -11,6 +11,8 @@ public class DamageLabel : UdonSharpBehaviour
     [SerializeField] private float lifetime = 1.5f;
     [SerializeField] private float startFadeAt = 0.5f;
     [SerializeField] private bool billboard = true;
+    [SerializeField] private bool constantSize = true;
+    [SerializeField] private float scaleMultiplier = 1f;
 
     private Vector3 startPosition;
     private float elapsed;
@@ -54,13 +56,21 @@ public class DamageLabel : UdonSharpBehaviour
 
         transform.position = startPosition + Vector3.up * (floatHeight * t);
 
-        if (billboard)
+        if (billboard || constantSize)
         {
             VRCPlayerApi localPlayer = Networking.LocalPlayer;
             if (Utilities.IsValid(localPlayer))
             {
                 var head = localPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.Head);
-                transform.rotation = Quaternion.LookRotation(transform.position - head.position);
+                if (billboard)
+                {
+                    transform.rotation = Quaternion.LookRotation(transform.position - head.position);
+                }
+                if (constantSize)
+                {
+                    float distance = Vector3.Distance(transform.position, head.position);
+                    transform.localScale = Vector3.one * distance * scaleMultiplier;
+                }
             }
         }
 
