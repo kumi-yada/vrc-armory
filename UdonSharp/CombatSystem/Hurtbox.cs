@@ -29,6 +29,9 @@ public class Hurtbox : UdonSharpBehaviour
     [UdonSynced] private int hitCounter;
     private int localHitCounter;
 
+    private Vector3 lastHitPoint;
+    public Vector3 GetLastHitPoint() { return lastHitPoint; }
+
     private bool isDead;
 
     void Start()
@@ -43,6 +46,8 @@ public class Hurtbox : UdonSharpBehaviour
     public void ApplyDamage(float amount, Vector3 point, Vector3 normal)
     {
         if (isDead) return;
+
+        lastHitPoint = point;
 
         if (!Networking.IsOwner(gameObject))
             Networking.SetOwner(Networking.LocalPlayer, gameObject);
