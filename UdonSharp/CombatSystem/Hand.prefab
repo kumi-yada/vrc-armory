@@ -85,6 +85,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1884299558007127665}
   trackedBone: 17
+  positionOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &1884299558007127665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -236,12 +237,12 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 5519988848797588944}
-  hitbox: {fileID: 0}
+  hitbox: {fileID: 7788529339744221189}
   minPunchSpeed: 3
   maxDamageSpeed: 15
   smoothing: 0.3
-  baseDamage: 10
-  maxDamage: 50
+  baseDamage: 5
+  maxDamage: 20
 --- !u!114 &5519988848797588944
 MonoBehaviour:
   m_ObjectHideFlags: 0

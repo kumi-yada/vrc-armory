@@ -14,6 +14,7 @@ namespace UdonSharp.Examples.Utilities
     public class BoneFollower : UdonSharpBehaviour 
     {
         public HumanBodyBones trackedBone;
+        public Vector3 positionOffset;
 
         VRCPlayerApi playerApi;
         bool isInEditor;
@@ -29,7 +30,13 @@ namespace UdonSharp.Examples.Utilities
             if (isInEditor)
                 return;
 
-            transform.SetPositionAndRotation(playerApi.GetBonePosition(trackedBone), playerApi.GetBoneRotation(trackedBone));
+            Vector3 pos = playerApi.GetBonePosition(trackedBone);
+            Quaternion rot = playerApi.GetBoneRotation(trackedBone);
+
+            if (positionOffset != Vector3.zero)
+                pos += rot * positionOffset;
+
+            transform.SetPositionAndRotation(pos, rot);
         }
     }
 }
