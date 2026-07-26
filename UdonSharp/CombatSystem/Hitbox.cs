@@ -48,5 +48,6 @@ public class Hitbox : UdonSharpBehaviour
         Vector3 hitNormal = (transform.position - hitPoint).normalized;
 
         hurtBox.ApplyDamage(damage, hitPoint, hitNormal);
+        Debug.Log($"Hitbox: Hit registered on {other.gameObject.name}. Damage: {damage}, HitPoint: {hitPoint}, HitNormal: {hitNormal}");
     }
 }

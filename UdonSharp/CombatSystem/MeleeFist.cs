@@ -45,6 +45,7 @@ public class MeleeFist : UdonSharpBehaviour
         currentSpeed = Mathf.Lerp(currentSpeed, rawSpeed, smoothFactor);
 
         bool shouldBeActive = currentSpeed >= minPunchSpeed;
+        Debug.Log($"Current Speed: {currentSpeed}, Should Be Active: {shouldBeActive}, Was Active: {wasActive}");
 
         if (shouldBeActive && !wasActive)
         {
