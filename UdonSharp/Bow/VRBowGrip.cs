@@ -39,7 +39,7 @@ public class VRBowGrip : UdonSharpBehaviour
             transform.position = bonePos + boneRot * Vector3.up * handYOffset * avatarScale;
 
             var distance = Vector3.Distance(transform.position, followTarget.transform.position);
-            bow.SetPullDistance(distance / maxPullDistance);
+            bow.SetPullDistance(distance / maxPullDistance * avatarScale);
         }
         else
         {
