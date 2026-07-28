@@ -9,43 +9,43 @@ public class Bucket : UdonSharpBehaviour
     [Header("Cooling")]
     [SerializeField] private float coolRate = 10f;
 
-    private SmithWeapon containedSmithWeapon;
+    private SmiteWeapon containedSmiteWeapon;
 
     public void OnTriggerEnter(Collider other)
     {
-        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
+        SmiteWeapon weapon = other.GetComponentInParent<SmiteWeapon>();
         if (!Utilities.IsValid(weapon))
             return;
 
-        containedSmithWeapon = weapon;
-        containedSmithWeapon.isHeated = false;
-        containedSmithWeapon.SetCoolRate(coolRate);
+        containedSmiteWeapon = weapon;
+        containedSmiteWeapon.isHeated = false;
+        containedSmiteWeapon.SetCoolRate(coolRate);
     }
 
     public void OnTriggerExit(Collider other)
     {
-        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
+        SmiteWeapon weapon = other.GetComponentInParent<SmiteWeapon>();
         if (!Utilities.IsValid(weapon))
             return;
 
-        if (containedSmithWeapon == weapon)
+        if (containedSmiteWeapon == weapon)
         {
-            containedSmithWeapon.ResetCoolRate();
-            containedSmithWeapon = null;
+            containedSmiteWeapon.ResetCoolRate();
+            containedSmiteWeapon = null;
         }
     }
 
     private void Update()
     {
-        if (!Utilities.IsValid(containedSmithWeapon))
+        if (!Utilities.IsValid(containedSmiteWeapon))
             return;
 
-        if (containedSmithWeapon.GetHeat() <= 0f)
+        if (containedSmiteWeapon.GetHeat() <= 0f)
         {
-            if (containedSmithWeapon.GetHitCount() > 0)
-                containedSmithWeapon.EvaluateQuality();
-            containedSmithWeapon.ResetCoolRate();
-            containedSmithWeapon = null;
+            if (containedSmiteWeapon.GetHitCount() > 0)
+                containedSmiteWeapon.EvaluateQuality();
+            containedSmiteWeapon.ResetCoolRate();
+            containedSmiteWeapon = null;
         }
     }
 }

@@ -6,61 +6,60 @@ using VRC.SDKBase;
 public class Tongs : UdonSharpBehaviour
 {
     public Transform attachPoint;
-    public Anvil anvil;
 
-    private SmithWeapon heldSmithWeapon;
-    private SmithWeapon nearbySmithWeapon;
+    private SmiteWeapon heldSmiteWeapon;
+    private SmiteWeapon nearbySmiteWeapon;
 
     private void OnTriggerEnter(Collider other)
     {
-        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
+        SmiteWeapon weapon = other.GetComponentInParent<SmiteWeapon>();
         if (Utilities.IsValid(weapon))
-            nearbySmithWeapon = weapon;
+            nearbySmiteWeapon = weapon;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
-        if (weapon != null && weapon == nearbySmithWeapon)
-            nearbySmithWeapon = null;
+        SmiteWeapon weapon = other.GetComponentInParent<SmiteWeapon>();
+        if (weapon != null && weapon == nearbySmiteWeapon)
+            nearbySmiteWeapon = null;
     }
 
-    public void GrabSmithWeapon(SmithWeapon weapon)
+    public void GrabSmiteWeapon(SmiteWeapon weapon)
     {
         if (!Utilities.IsValid(weapon)) return;
-        if (heldSmithWeapon != null) return;
+        if (heldSmiteWeapon != null) return;
 
-        nearbySmithWeapon = weapon;
-        heldSmithWeapon = weapon;
+        nearbySmiteWeapon = weapon;
+        heldSmiteWeapon = weapon;
         weapon.OnGrabbed();
     }
 
     public override void OnPickupUseDown()
     {
-        if (Utilities.IsValid(anvil) && anvil.ActiveSmitePoint != null)
+        if (Utilities.IsValid(heldSmiteWeapon))
         {
-            SmitePoint smite = anvil.ActiveSmitePoint;
-            if (!smite.IsActive || smite.IsFinished) return;
+            SmitePoint activePoint = heldSmiteWeapon.GetActiveSmitePoint();
+            if (Utilities.IsValid(activePoint) && activePoint.IsActive && !activePoint.IsFinished)
+            {
+                activePoint.CheckHit();
+                return;
+            }
 
-            smite.CheckHit();
+            heldSmiteWeapon.OnReleased();
+            heldSmiteWeapon = null;
             return;
         }
 
-        if (IsHoldingSmithWeapon())
+        if (Utilities.IsValid(nearbySmiteWeapon))
         {
-            heldSmithWeapon.OnReleased();
-            heldSmithWeapon = null;
-        }
-        else if (Utilities.IsValid(nearbySmithWeapon))
-        {
-            Networking.SetOwner(Networking.LocalPlayer, nearbySmithWeapon.gameObject);
-            heldSmithWeapon = nearbySmithWeapon;
-            nearbySmithWeapon.OnGrabbed();
+            Networking.SetOwner(Networking.LocalPlayer, nearbySmiteWeapon.gameObject);
+            heldSmiteWeapon = nearbySmiteWeapon;
+            nearbySmiteWeapon.OnGrabbed();
         }
     }
 
-    public bool IsHoldingSmithWeapon()
+    public bool IsHoldingSmiteWeapon()
     {
-        return heldSmithWeapon != null;
+        return heldSmiteWeapon != null;
     }
 }

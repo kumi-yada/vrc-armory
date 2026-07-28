@@ -9,8 +9,6 @@ public class Anvil : UdonSharpBehaviour
     [Header("UI")]
     [SerializeField] private Canvas uiCanvas;
 
-    [System.NonSerialized] public SmitePoint ActiveSmitePoint;
-
     void Start()
     {
         if (Utilities.IsValid(uiCanvas))

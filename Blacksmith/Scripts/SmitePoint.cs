@@ -5,7 +5,6 @@ using VRC.SDKBase;
 [UdonBehaviourSyncMode(BehaviourSyncMode.NoVariableSync)]
 public class SmitePoint : UdonSharpBehaviour
 {
-    [SerializeField] private Anvil anvil;
     [SerializeField] private float smiteSpeed = 30f;
     [SerializeField] private int maxSmiteHits = 5;
     [SerializeField] private float hitAreaFrom = 40f;
@@ -16,13 +15,14 @@ public class SmitePoint : UdonSharpBehaviour
     [System.NonSerialized] public bool IsFinished;
     [System.NonSerialized] public int CurrentSmiteHits;
     [System.NonSerialized] public float LastHitAccuracy;
-    [System.NonSerialized] public SmithWeapon weapon;
+    [System.NonSerialized] public SmiteWeapon weapon;
+    private Anvil anvil;
 
     private bool movingUp = true;
 
     void Start()
     {
-        weapon = GetComponentInParent<SmithWeapon>();
+        weapon = GetComponentInParent<SmiteWeapon>();
     }
 
     void Update()
@@ -87,20 +87,25 @@ public class SmitePoint : UdonSharpBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!Utilities.IsValid(anvil) || IsFinished) return;
+        if (!other.name.Contains("Anvil")) return;
+        if (IsFinished) return;
 
+        var hitAnvil = other.GetComponent<Anvil>();
+        if (!Utilities.IsValid(hitAnvil)) return;
+
+        anvil = hitAnvil;
         IsActive = true;
-        anvil.ActiveSmitePoint = this;
         anvil.ShowUI();
     }
 
     private void OnTriggerExit(Collider other)
     {
+        if (!other.name.Contains("Anvil")) return;
+
         if (!Utilities.IsValid(anvil)) return;
 
         IsActive = false;
-        if (anvil.ActiveSmitePoint == this)
-            anvil.ActiveSmitePoint = null;
         anvil.HideUI();
+        anvil = null;
     }
 }
