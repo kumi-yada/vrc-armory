@@ -44,6 +44,7 @@ public class Bucket : UdonSharpBehaviour
         {
             heat = 0f;
             containedWeapon.isHeated = false;
+            containedWeapon.EvaluateQuality();
         }
 
         containedWeapon.SetHeat(heat);

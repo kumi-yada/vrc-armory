@@ -39,7 +39,13 @@ public class Tongs : UdonSharpBehaviour
     {
         if (anvil?.ActiveSmitePoint != null)
         {
-            anvil.ActiveSmitePoint.CheckHit();
+            SmitePoint smite = anvil.ActiveSmitePoint;
+            if (!smite.IsActive || smite.IsFinished) return;
+
+            bool hit = smite.CheckHit();
+            if (hit && heldWeapon != null)
+                heldWeapon.RecordHit(smite.LastHitAccuracy);
+
             return;
         }
 

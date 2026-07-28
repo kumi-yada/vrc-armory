@@ -15,6 +15,7 @@ public class SmitePoint : UdonSharpBehaviour
     public bool IsActive { get; private set; }
     public bool IsFinished { get; private set; }
     public int CurrentSmiteHits { get; private set; }
+    public float LastHitAccuracy { get; private set; }
 
     private bool movingUp = true;
 
@@ -44,12 +45,20 @@ public class SmitePoint : UdonSharpBehaviour
 
     public bool CheckHit()
     {
-        if (!IsActive || IsFinished) return false;
+        if (!IsActive || IsFinished)
+        {
+            LastHitAccuracy = 0f;
+            return false;
+        }
 
         bool hit = SmiteValue >= hitAreaFrom && SmiteValue <= hitAreaTo;
 
         if (hit)
         {
+            float center = (hitAreaFrom + hitAreaTo) / 2f;
+            float halfRange = (hitAreaTo - hitAreaFrom) / 2f;
+            LastHitAccuracy = 1f - Mathf.Abs(SmiteValue - center) / halfRange;
+
             CurrentSmiteHits++;
             if (CurrentSmiteHits >= maxSmiteHits)
             {
@@ -58,6 +67,10 @@ public class SmitePoint : UdonSharpBehaviour
                 if (Utilities.IsValid(anvil))
                     anvil.HideUI();
             }
+        }
+        else
+        {
+            LastHitAccuracy = 0f;
         }
 
         return hit;
