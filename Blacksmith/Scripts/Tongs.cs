@@ -37,7 +37,7 @@ public class Tongs : UdonSharpBehaviour
 
     public override void OnPickupUseDown()
     {
-        if (anvil?.ActiveSmitePoint != null)
+        if (Utilities.IsValid(anvil) && anvil.ActiveSmitePoint != null)
         {
             SmitePoint smite = anvil.ActiveSmitePoint;
             if (!smite.IsActive || smite.IsFinished) return;

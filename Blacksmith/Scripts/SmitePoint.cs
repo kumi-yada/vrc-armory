@@ -11,12 +11,12 @@ public class SmitePoint : UdonSharpBehaviour
     [SerializeField] private float hitAreaFrom = 40f;
     [SerializeField] private float hitAreaTo = 60f;
 
-    public float SmiteValue { get; private set; }
-    public bool IsActive { get; private set; }
-    public bool IsFinished { get; private set; }
-    public int CurrentSmiteHits { get; private set; }
-    public float LastHitAccuracy { get; private set; }
-    public SmithWeapon weapon { get; private set; }
+    [System.NonSerialized] public float SmiteValue;
+    [System.NonSerialized] public bool IsActive;
+    [System.NonSerialized] public bool IsFinished;
+    [System.NonSerialized] public int CurrentSmiteHits;
+    [System.NonSerialized] public float LastHitAccuracy;
+    [System.NonSerialized] public SmithWeapon weapon;
 
     private bool movingUp = true;
 

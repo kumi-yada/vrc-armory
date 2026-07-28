@@ -18,10 +18,10 @@ MonoBehaviour:
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 9e544eefbcec6553d94828b01c7c09eb, type: 3}
   scriptVersion: 2
-  compiledVersion: 0
-  behaviourSyncMode: 0
+  compiledVersion: 2
+  behaviourSyncMode: 2
   hasInteractEvent: 0
-  scriptID: 0
+  scriptID: 8317855251231889345
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -32,5 +32,22 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes:
     - Name: fieldDefinitions
-      Entry: 6
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[UdonSharp.Compiler.FieldDefinition,
+        UdonSharp.Editor]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.GenericEqualityComparer`1[[System.String,
+        mscorlib]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
       Data: 
