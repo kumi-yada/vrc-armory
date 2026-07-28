@@ -10,7 +10,6 @@ public class Forge : UdonSharpBehaviour
 {
     [Header("Data")]
     [SerializeField] private string[] recipeNames_data;
-    [SerializeField] private float[] recipeHeatResistances;
 
     [Header("Pool")]
     [SerializeField] private VRCObjectPool itemPool;
@@ -29,7 +28,6 @@ public class Forge : UdonSharpBehaviour
     private bool selectingRecipe;
     private GameObject currentItem;
     private SmithWeapon currentSmithWeapon;
-    private float currentHeatResistance;
     private bool isActive;
 
     void Start()
@@ -56,10 +54,10 @@ public class Forge : UdonSharpBehaviour
 
             row.Setup(this, i);
 
-            if (i < recipeHeatResistances.Length)
+            if (i < recipeNames_data.Length)
             {
                 recipeNames[i] = recipeNames_data[i];
-                recipeDetails[i] = "Resist: " + recipeHeatResistances[i];
+                recipeDetails[i] = recipeNames_data[i];
                 row.SetDisplay(recipeNames[i], recipeDetails[i], false);
             }
 
@@ -92,9 +90,6 @@ public class Forge : UdonSharpBehaviour
         if (!Networking.IsOwner(gameObject)) return;
         selectingRecipe = false;
         HideUI();
-
-        if (selectedRecipeIndex < recipeHeatResistances.Length)
-            currentHeatResistance = recipeHeatResistances[selectedRecipeIndex];
 
         SpawnItem();
         SetActive(true);
@@ -134,7 +129,7 @@ public class Forge : UdonSharpBehaviour
         currentSmithWeapon = currentItem.GetComponent<SmithWeapon>();
         if (Utilities.IsValid(currentSmithWeapon))
         {
-            currentSmithWeapon.heatResistance = currentHeatResistance;
+            currentSmithWeapon.recipeName = recipeNames_data[selectedRecipeIndex];
             currentSmithWeapon.isHeated = isActive;
         }
 

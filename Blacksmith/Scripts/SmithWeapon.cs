@@ -6,7 +6,7 @@ using VRC.Udon;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmithWeapon : UdonSharpBehaviour
 {
-    [System.NonSerialized] public float heatResistance;
+    [System.NonSerialized] public string recipeName;
     [System.NonSerialized] public float currentHeat;
     [System.NonSerialized] public bool isHeated;
     [UdonSynced] public bool isHeld;
@@ -51,9 +51,9 @@ public class SmithWeapon : UdonSharpBehaviour
             }
         }
 
-        if (isHeated && heatResistance > 0f)
+        if (isHeated)
         {
-            float effectiveRate = heatRate / heatResistance * 50f;
+            float effectiveRate = heatRate;
             currentHeat = Mathf.Min(currentHeat + effectiveRate * Time.deltaTime, optimalFormingHeat);
         }
         else if (currentHeat > 0f)
@@ -108,7 +108,7 @@ public class SmithWeapon : UdonSharpBehaviour
 
     public void RecordHit(float accuracy)
     {
-        if (isCompleted || heatResistance <= 0f) return;
+        if (isCompleted) return;
 
         totalAttempts++;
 
