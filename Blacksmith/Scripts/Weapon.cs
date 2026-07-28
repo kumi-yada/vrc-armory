@@ -11,6 +11,10 @@ public class Weapon : UdonSharpBehaviour
     [System.NonSerialized] public bool isHeated;
     [UdonSynced] public bool isHeld;
 
+    [SerializeField] private float heatRate = 100f;
+    [SerializeField] private float coolRate = 3f;
+    private float defaultCoolRate;
+
     [System.NonSerialized] public bool isCompleted;
     [System.NonSerialized] public float qualityScore;
     [System.NonSerialized] public float[] hitScores;
@@ -22,6 +26,7 @@ public class Weapon : UdonSharpBehaviour
     void Start()
     {
         isInEditor = Networking.LocalPlayer == null;
+        defaultCoolRate = coolRate;
         hitScores = new float[5];
         hitCount = 0;
         totalAttempts = 0;
@@ -31,18 +36,29 @@ public class Weapon : UdonSharpBehaviour
 
     void Update()
     {
-        if (isInEditor || !isHeld)
+        if (isInEditor)
             return;
 
-        VRCPlayerApi owner = Networking.GetOwner(gameObject);
-        if (!Utilities.IsValid(owner))
-            return;
+        if (isHeld)
+        {
+            VRCPlayerApi owner = Networking.GetOwner(gameObject);
+            if (Utilities.IsValid(owner))
+            {
+                Transform attachPt = FindAttachPoint(owner);
+                if (Utilities.IsValid(attachPt))
+                    transform.SetPositionAndRotation(attachPt.position, attachPt.rotation);
+            }
+        }
 
-        Transform attachPt = FindAttachPoint(owner);
-        if (!Utilities.IsValid(attachPt))
-            return;
-
-        transform.SetPositionAndRotation(attachPt.position, attachPt.rotation);
+        if (isHeated && recipe != null)
+        {
+            float effectiveRate = heatRate / recipe.heatResistance * 50f;
+            currentHeat = Mathf.Min(currentHeat + effectiveRate * Time.deltaTime, recipe.optimalFormingHeat);
+        }
+        else if (currentHeat > 0f)
+        {
+            currentHeat = Mathf.Max(0f, currentHeat - coolRate * Time.deltaTime);
+        }
     }
 
     private Transform FindAttachPoint(VRCPlayerApi player)
@@ -57,13 +73,6 @@ public class Weapon : UdonSharpBehaviour
         return null;
     }
 
-    public void Setup(RecipeData recipeData, float heat)
-    {
-        recipe = recipeData;
-        currentHeat = heat;
-        isHeated = true;
-    }
-
     public bool IsHeld()
     {
         return isHeld;
@@ -74,9 +83,14 @@ public class Weapon : UdonSharpBehaviour
         return currentHeat;
     }
 
-    public void SetHeat(float heat)
+    public void SetCoolRate(float rate)
     {
-        currentHeat = heat;
+        coolRate = rate;
+    }
+
+    public void ResetCoolRate()
+    {
+        coolRate = defaultCoolRate;
     }
 
     public void OnGrabbed()

@@ -18,6 +18,8 @@ public class Bucket : UdonSharpBehaviour
             return;
 
         containedWeapon = weapon;
+        containedWeapon.isHeated = false;
+        containedWeapon.SetCoolRate(coolRate);
     }
 
     public void OnTriggerExit(Collider other)
@@ -27,7 +29,10 @@ public class Bucket : UdonSharpBehaviour
             return;
 
         if (containedWeapon == weapon)
+        {
+            containedWeapon.ResetCoolRate();
             containedWeapon = null;
+        }
     }
 
     private void Update()
@@ -35,18 +40,12 @@ public class Bucket : UdonSharpBehaviour
         if (!Utilities.IsValid(containedWeapon))
             return;
 
-        float heat = containedWeapon.GetHeat();
-        if (heat <= 0f)
-            return;
-
-        heat -= coolRate * Time.deltaTime;
-        if (heat <= 0f)
+        if (containedWeapon.GetHeat() <= 0f)
         {
-            heat = 0f;
-            containedWeapon.isHeated = false;
-            containedWeapon.EvaluateQuality();
+            if (containedWeapon.GetHitCount() > 0)
+                containedWeapon.EvaluateQuality();
+            containedWeapon.ResetCoolRate();
+            containedWeapon = null;
         }
-
-        containedWeapon.SetHeat(heat);
     }
 }

@@ -14,9 +14,6 @@ public class Forge : UdonSharpBehaviour
     [Header("Pool")]
     [SerializeField] private VRCObjectPool itemPool;
 
-    [Header("Heating")]
-    [SerializeField] private float heatRate = 5f;
-
     [Header("UI")]
     [SerializeField] private Canvas uiCanvas;
     [SerializeField] private Transform recipeContainer;
@@ -32,7 +29,7 @@ public class Forge : UdonSharpBehaviour
     private GameObject currentItem;
     private Weapon currentWeapon;
     private RecipeData currentRecipe;
-    private bool heating;
+    private bool isActive;
 
     void Start()
     {
@@ -68,7 +65,6 @@ public class Forge : UdonSharpBehaviour
 
             row.gameObject.SetActive(false);
         }
-
     }
 
     public void SelectRecipe(int index)
@@ -82,7 +78,7 @@ public class Forge : UdonSharpBehaviour
     public override void Interact()
     {
         if (!Networking.IsOwner(gameObject)) return;
-        if (heating || selectingRecipe)
+        if (isActive || selectingRecipe)
             return;
 
         selectingRecipe = true;
@@ -101,6 +97,7 @@ public class Forge : UdonSharpBehaviour
             currentRecipe = recipes[selectedRecipeIndex];
 
         SpawnItem();
+        SetActive(true);
     }
 
     public void CancelSelection()
@@ -118,7 +115,14 @@ public class Forge : UdonSharpBehaviour
             uiCanvas.enabled = false;
     }
 
-    private void SpawnItem()
+    public void SetActive(bool active)
+    {
+        isActive = active;
+        if (Utilities.IsValid(currentWeapon))
+            currentWeapon.isHeated = active;
+    }
+
+    public void SpawnWeapon()
     {
         if (!Utilities.IsValid(itemPool))
             return;
@@ -129,7 +133,10 @@ public class Forge : UdonSharpBehaviour
 
         currentWeapon = currentItem.GetComponent<Weapon>();
         if (Utilities.IsValid(currentWeapon))
-            currentWeapon.Setup(currentRecipe, 0f);
+        {
+            currentWeapon.recipe = currentRecipe;
+            currentWeapon.isHeated = isActive;
+        }
 
         Vector3 pos = Utilities.IsValid(itemSpawnPoint)
             ? itemSpawnPoint.position
@@ -137,26 +144,10 @@ public class Forge : UdonSharpBehaviour
 
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
-
-        heating = true;
     }
 
-    private void Update()
+    private void SpawnItem()
     {
-        if (!heating || !Utilities.IsValid(currentWeapon) || currentRecipe == null)
-            return;
-
-        float effectiveRate = heatRate / currentRecipe.heatResistance * 50f;
-        float heat = currentWeapon.GetHeat() + effectiveRate * Time.deltaTime;
-        float target = currentRecipe.optimalFormingHeat;
-
-        if (heat >= target)
-        {
-            heat = target;
-            heating = false;
-        }
-
-        currentWeapon.SetHeat(heat);
+        SpawnWeapon();
     }
-
 }
