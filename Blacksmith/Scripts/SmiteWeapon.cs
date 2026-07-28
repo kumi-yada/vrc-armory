@@ -26,6 +26,11 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] private SmitePoint[] smitePoints;
     private int currentSmiteIndex;
 
+    [Header("Blend Shape")]
+    [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
+    [SerializeField] private int blobShapeIndex;
+    private int lastFinishedCount = -1;
+
     public SmitePoint GetActiveSmitePoint()
     {
         if (smitePoints == null || smitePoints.Length == 0) return null;
@@ -84,7 +89,9 @@ public class SmiteWeapon : UdonSharpBehaviour
         propBlock = new MaterialPropertyBlock();
         currentEmission = Color.black;
         glowDirty = true;
+
     }
+
 
     void Update()
     {
@@ -120,6 +127,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         }
 
         UpdateHeatGlow();
+        UpdateBlobShape();
     }
 
     private void UpdateHeatGlow()
@@ -143,6 +151,26 @@ public class SmiteWeapon : UdonSharpBehaviour
         propBlock.SetColor("_EmissionColor", targetColor);
         targetRenderer.SetPropertyBlock(propBlock);
         glowDirty = false;
+    }
+
+    private void UpdateBlobShape()
+    {
+        if (blendShapeRenderer == null) return;
+        if (smitePoints == null || smitePoints.Length == 0) return;
+
+        int total = smitePoints.Length;
+        int finished = 0;
+        for (int i = 0; i < total; i++)
+        {
+            if (smitePoints[i].IsFinished)
+                finished++;
+        }
+
+        if (finished == lastFinishedCount) return;
+        lastFinishedCount = finished;
+
+        float blobValue = 100f * (1f - (float)finished / total);
+        blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, blobValue);
     }
 
     private Color SampleHeatRamp(float t)

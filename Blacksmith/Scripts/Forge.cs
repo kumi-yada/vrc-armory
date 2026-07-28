@@ -2,7 +2,6 @@
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
-using VRC.SDK3.Components;
 using TMPro;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
@@ -11,8 +10,8 @@ public class Forge : UdonSharpBehaviour
     [Header("Data")]
     [SerializeField] private string[] recipeNames_data;
 
-    [Header("Pool")]
-    [SerializeField] private VRCObjectPool itemPool;
+    [Header("Items")]
+    [SerializeField] private GameObject[] spawnItems;
 
     [Header("UI")]
     [SerializeField] private Canvas uiCanvas;
@@ -119,19 +118,15 @@ public class Forge : UdonSharpBehaviour
 
     public void SpawnSmiteWeapon()
     {
-        if (!Utilities.IsValid(itemPool))
+        if (spawnItems == null || selectedRecipeIndex < 0 || selectedRecipeIndex >= spawnItems.Length)
             return;
 
-        currentItem = itemPool.TryToSpawn();
+        if (Utilities.IsValid(currentItem))
+            currentItem.SetActive(false);
+
+        currentItem = spawnItems[selectedRecipeIndex];
         if (!Utilities.IsValid(currentItem))
             return;
-
-        currentSmiteWeapon = currentItem.GetComponent<SmiteWeapon>();
-        if (Utilities.IsValid(currentSmiteWeapon))
-        {
-            currentSmiteWeapon.recipeName = recipeNames_data[selectedRecipeIndex];
-            currentSmiteWeapon.isHeated = isActive;
-        }
 
         Vector3 pos = Utilities.IsValid(itemSpawnPoint)
             ? itemSpawnPoint.position
@@ -139,6 +134,14 @@ public class Forge : UdonSharpBehaviour
 
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
+        currentItem.SetActive(true);
+
+        currentSmiteWeapon = currentItem.GetComponent<SmiteWeapon>();
+        if (Utilities.IsValid(currentSmiteWeapon))
+        {
+            currentSmiteWeapon.recipeName = recipeNames_data[selectedRecipeIndex];
+            currentSmiteWeapon.isHeated = isActive;
+        }
     }
 
     private void SpawnItem()
