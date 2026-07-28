@@ -16,13 +16,13 @@ public class SmitePoint : UdonSharpBehaviour
     public bool IsFinished { get; private set; }
     public int CurrentSmiteHits { get; private set; }
     public float LastHitAccuracy { get; private set; }
-    public Weapon weapon { get; private set; }
+    public SmithWeapon weapon { get; private set; }
 
     private bool movingUp = true;
 
     void Start()
     {
-        weapon = GetComponentInParent<Weapon>();
+        weapon = GetComponentInParent<SmithWeapon>();
     }
 
     void Update()

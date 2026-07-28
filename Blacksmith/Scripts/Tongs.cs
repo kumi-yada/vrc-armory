@@ -8,30 +8,30 @@ public class Tongs : UdonSharpBehaviour
     public Transform attachPoint;
     public Anvil anvil;
 
-    private Weapon heldWeapon;
-    private Weapon nearbyWeapon;
+    private SmithWeapon heldSmithWeapon;
+    private SmithWeapon nearbySmithWeapon;
 
     private void OnTriggerEnter(Collider other)
     {
-        Weapon weapon = other.GetComponentInParent<Weapon>();
+        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
         if (Utilities.IsValid(weapon))
-            nearbyWeapon = weapon;
+            nearbySmithWeapon = weapon;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        Weapon weapon = other.GetComponentInParent<Weapon>();
-        if (weapon != null && weapon == nearbyWeapon)
-            nearbyWeapon = null;
+        SmithWeapon weapon = other.GetComponentInParent<SmithWeapon>();
+        if (weapon != null && weapon == nearbySmithWeapon)
+            nearbySmithWeapon = null;
     }
 
-    public void GrabWeapon(Weapon weapon)
+    public void GrabSmithWeapon(SmithWeapon weapon)
     {
         if (!Utilities.IsValid(weapon)) return;
-        if (heldWeapon != null) return;
+        if (heldSmithWeapon != null) return;
 
-        nearbyWeapon = weapon;
-        heldWeapon = weapon;
+        nearbySmithWeapon = weapon;
+        heldSmithWeapon = weapon;
         weapon.OnGrabbed();
     }
 
@@ -46,21 +46,21 @@ public class Tongs : UdonSharpBehaviour
             return;
         }
 
-        if (IsHoldingWeapon())
+        if (IsHoldingSmithWeapon())
         {
-            heldWeapon.OnReleased();
-            heldWeapon = null;
+            heldSmithWeapon.OnReleased();
+            heldSmithWeapon = null;
         }
-        else if (Utilities.IsValid(nearbyWeapon))
+        else if (Utilities.IsValid(nearbySmithWeapon))
         {
-            Networking.SetOwner(Networking.LocalPlayer, nearbyWeapon.gameObject);
-            heldWeapon = nearbyWeapon;
-            nearbyWeapon.OnGrabbed();
+            Networking.SetOwner(Networking.LocalPlayer, nearbySmithWeapon.gameObject);
+            heldSmithWeapon = nearbySmithWeapon;
+            nearbySmithWeapon.OnGrabbed();
         }
     }
 
-    public bool IsHoldingWeapon()
+    public bool IsHoldingSmithWeapon()
     {
-        return heldWeapon != null;
+        return heldSmithWeapon != null;
     }
 }

@@ -4,7 +4,7 @@ using VRC.SDKBase;
 using VRC.Udon;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
-public class Weapon : UdonSharpBehaviour
+public class SmithWeapon : UdonSharpBehaviour
 {
     [System.NonSerialized] public RecipeData recipe;
     [System.NonSerialized] public float currentHeat;
@@ -13,6 +13,7 @@ public class Weapon : UdonSharpBehaviour
 
     [SerializeField] private float heatRate = 100f;
     [SerializeField] private float coolRate = 3f;
+    [SerializeField] private float optimalFormingHeat = 750f;
     private float defaultCoolRate;
 
     [System.NonSerialized] public bool isCompleted;
@@ -53,7 +54,7 @@ public class Weapon : UdonSharpBehaviour
         if (isHeated && recipe != null)
         {
             float effectiveRate = heatRate / recipe.heatResistance * 50f;
-            currentHeat = Mathf.Min(currentHeat + effectiveRate * Time.deltaTime, recipe.optimalFormingHeat);
+            currentHeat = Mathf.Min(currentHeat + effectiveRate * Time.deltaTime, optimalFormingHeat);
         }
         else if (currentHeat > 0f)
         {
@@ -113,7 +114,7 @@ public class Weapon : UdonSharpBehaviour
 
         if (accuracy <= 0f) return;
 
-        float optimalHeat = recipe.optimalFormingHeat;
+        float optimalHeat = optimalFormingHeat;
         float heatDelta = Mathf.Abs(currentHeat - optimalHeat);
         float heatTolerance = optimalHeat * 0.25f;
         float heatFactor = 1f - Mathf.Clamp01(heatDelta / heatTolerance);

@@ -27,7 +27,7 @@ public class Forge : UdonSharpBehaviour
     private int selectedRecipeIndex = -1;
     private bool selectingRecipe;
     private GameObject currentItem;
-    private Weapon currentWeapon;
+    private SmithWeapon currentSmithWeapon;
     private RecipeData currentRecipe;
     private bool isActive;
 
@@ -59,7 +59,7 @@ public class Forge : UdonSharpBehaviour
             {
                 RecipeData r = recipes[i];
                 recipeNames[i] = r.recipeName;
-                recipeDetails[i] = "Heat: " + r.optimalFormingHeat + " °C\nResist: " + r.heatResistance;
+                recipeDetails[i] = "Resist: " + r.heatResistance;
                 row.SetDisplay(recipeNames[i], recipeDetails[i], false);
             }
 
@@ -118,11 +118,11 @@ public class Forge : UdonSharpBehaviour
     public void SetActive(bool active)
     {
         isActive = active;
-        if (Utilities.IsValid(currentWeapon))
-            currentWeapon.isHeated = active;
+        if (Utilities.IsValid(currentSmithWeapon))
+            currentSmithWeapon.isHeated = active;
     }
 
-    public void SpawnWeapon()
+    public void SpawnSmithWeapon()
     {
         if (!Utilities.IsValid(itemPool))
             return;
@@ -131,11 +131,11 @@ public class Forge : UdonSharpBehaviour
         if (!Utilities.IsValid(currentItem))
             return;
 
-        currentWeapon = currentItem.GetComponent<Weapon>();
-        if (Utilities.IsValid(currentWeapon))
+        currentSmithWeapon = currentItem.GetComponent<SmithWeapon>();
+        if (Utilities.IsValid(currentSmithWeapon))
         {
-            currentWeapon.recipe = currentRecipe;
-            currentWeapon.isHeated = isActive;
+            currentSmithWeapon.recipe = currentRecipe;
+            currentSmithWeapon.isHeated = isActive;
         }
 
         Vector3 pos = Utilities.IsValid(itemSpawnPoint)
@@ -148,6 +148,6 @@ public class Forge : UdonSharpBehaviour
 
     private void SpawnItem()
     {
-        SpawnWeapon();
+        SpawnSmithWeapon();
     }
 }
