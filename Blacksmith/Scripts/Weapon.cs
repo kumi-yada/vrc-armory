@@ -38,21 +38,21 @@ public class Weapon : UdonSharpBehaviour
         if (!Utilities.IsValid(owner))
             return;
 
-        Tongs tongs = FindTongs(owner);
-        if (!Utilities.IsValid(tongs) || tongs.attachPoint == null)
+        Transform attachPt = FindAttachPoint(owner);
+        if (!Utilities.IsValid(attachPt))
             return;
 
-        transform.SetPositionAndRotation(tongs.attachPoint.position, tongs.attachPoint.rotation);
+        transform.SetPositionAndRotation(attachPt.position, attachPt.rotation);
     }
 
-    private Tongs FindTongs(VRCPlayerApi player)
+    private Transform FindAttachPoint(VRCPlayerApi player)
     {
         var objects = Networking.GetPlayerObjects(player);
         for (int i = 0; i < objects.Length; i++)
         {
             if (!Utilities.IsValid(objects[i])) continue;
             Tongs tongs = objects[i].GetComponentInChildren<Tongs>();
-            if (Utilities.IsValid(tongs)) return tongs;
+            if (Utilities.IsValid(tongs)) return tongs.attachPoint;
         }
         return null;
     }

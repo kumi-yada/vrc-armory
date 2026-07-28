@@ -16,8 +16,14 @@ public class SmitePoint : UdonSharpBehaviour
     public bool IsFinished { get; private set; }
     public int CurrentSmiteHits { get; private set; }
     public float LastHitAccuracy { get; private set; }
+    public Weapon weapon { get; private set; }
 
     private bool movingUp = true;
+
+    void Start()
+    {
+        weapon = GetComponentInParent<Weapon>();
+    }
 
     void Update()
     {
@@ -58,6 +64,9 @@ public class SmitePoint : UdonSharpBehaviour
             float center = (hitAreaFrom + hitAreaTo) / 2f;
             float halfRange = (hitAreaTo - hitAreaFrom) / 2f;
             LastHitAccuracy = 1f - Mathf.Abs(SmiteValue - center) / halfRange;
+
+            if (Utilities.IsValid(weapon))
+                weapon.RecordHit(LastHitAccuracy);
 
             CurrentSmiteHits++;
             if (CurrentSmiteHits >= maxSmiteHits)
