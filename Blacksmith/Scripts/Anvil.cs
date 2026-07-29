@@ -12,13 +12,20 @@ public class Anvil : UdonSharpBehaviour
     [SerializeField] private Slider smiteSlider;
     [SerializeField] private Image hitZoneImage;
     [SerializeField] private RectTransform hitZoneCenterMarker;
+    [SerializeField] private Image sliderFillImage;
 
     [System.NonSerialized] public SmitePoint activeSmitePoint;
+
+    private float flashTimer;
+    private Color flashColor;
+    private Color originalFillColor;
 
     void Start()
     {
         if (Utilities.IsValid(uiCanvas))
             uiCanvas.enabled = false;
+        if (Utilities.IsValid(sliderFillImage))
+            originalFillColor = sliderFillImage.color;
     }
 
     public void SetActiveSmitePoint(SmitePoint point)
@@ -36,6 +43,12 @@ public class Anvil : UdonSharpBehaviour
     {
         if (Utilities.IsValid(uiCanvas))
             uiCanvas.enabled = false;
+    }
+
+    public void OnSmiteResult(bool hit)
+    {
+        flashTimer = 0.15f;
+        flashColor = hit ? Color.green : Color.red;
     }
 
     void Update()
@@ -61,6 +74,19 @@ public class Anvil : UdonSharpBehaviour
             float center = (hitFrom + hitTo) / 2f;
             hitZoneCenterMarker.anchorMin = new Vector2(center, 0f);
             hitZoneCenterMarker.anchorMax = new Vector2(center, 1f);
+        }
+
+        if (Utilities.IsValid(sliderFillImage))
+        {
+            if (flashTimer > 0f)
+            {
+                sliderFillImage.color = flashColor;
+                flashTimer -= Time.deltaTime;
+            }
+            else
+            {
+                sliderFillImage.color = originalFillColor;
+            }
         }
     }
 }

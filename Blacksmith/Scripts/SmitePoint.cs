@@ -96,6 +96,9 @@ public class SmitePoint : UdonSharpBehaviour
             }
         }
 
+        if (Utilities.IsValid(anvil))
+            anvil.OnSmiteResult(hit);
+
         return hit;
     }
 
