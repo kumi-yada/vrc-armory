@@ -19,6 +19,7 @@ public class Storage : UdonSharpBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
+            if (!Utilities.IsValid(slots[i])) continue;
             if (slots[i].itemIndex != -1) continue;
             slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName);
             weapon.isStored = true;

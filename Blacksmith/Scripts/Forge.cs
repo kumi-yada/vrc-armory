@@ -76,10 +76,10 @@ public class Forge : UdonSharpBehaviour
 
         selectedRecipeIndex = index;
         SpawnSmiteWeapon();
+        if (currentItem == null) return;
 
         recipeListPage.SetActive(false);
         recipeDetailsPage.SetActive(true);
-
         SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
         if (Utilities.IsValid(recipeNameText) && Utilities.IsValid(weapon))
             recipeNameText.text = weapon.recipeName;
@@ -115,7 +115,10 @@ public class Forge : UdonSharpBehaviour
 
         currentItem = spawnItems[selectedRecipeIndex];
         if (!Utilities.IsValid(currentItem))
+        {
+            Debug.Log("Forge: SpawnSmiteWeapon: currentItem is null for index " + selectedRecipeIndex);
             return;
+        }
 
         InitSelectedWeapon();
 
@@ -161,4 +164,7 @@ public class Forge : UdonSharpBehaviour
             particleField.Stop();
         RequestSerialization();
     }
+
+    // Recipe selection shortcuts
+    public void SelectKnife() { SelectRecipe(0); }
 }
