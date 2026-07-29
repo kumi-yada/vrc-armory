@@ -9,7 +9,7 @@ using TMPro;
 public class Forge : UdonSharpBehaviour
 {
     [Header("Items")]
-    [SerializeField] private GameObject[] spawnItems;
+    public GameObject[] spawnItems;
     [SerializeField] private Transform itemSpawnPoint;
 
     [Header("UI")]
@@ -84,17 +84,24 @@ public class Forge : UdonSharpBehaviour
             recipeNameText.text = weapon.recipeName;
     }
 
+    public void ClearCurrentItem()
+    {
+        if (!Networking.IsOwner(gameObject)) return;
+
+        currentItem = null;
+        StopHeat();
+
+        recipeDetailsPage.SetActive(false);
+        recipeListPage.SetActive(true);
+    }
+
     public void CancelSelection()
     {
         if (!Networking.IsOwner(gameObject)) return;
 
         if (Utilities.IsValid(currentItem))
             currentItem.SetActive(false);
-        currentItem = null;
-        StopHeat();
-
-        recipeDetailsPage.SetActive(false);
-        recipeListPage.SetActive(true);
+        ClearCurrentItem();
     }
 
     public void SpawnSmiteWeapon()
@@ -110,6 +117,14 @@ public class Forge : UdonSharpBehaviour
             return;
 
         InitSelectedWeapon();
+
+        SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
+        if (Utilities.IsValid(weapon))
+        {
+            weapon.spawnItemIndex = selectedRecipeIndex;
+            weapon.forge = this;
+        }
+
         StartHeat();
 
         RequestSerialization();

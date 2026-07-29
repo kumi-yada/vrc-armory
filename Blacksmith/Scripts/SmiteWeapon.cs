@@ -14,6 +14,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [UdonSynced] private Quaternion syncedRotation;
 
     [SerializeField] public string recipeName;
+    [System.NonSerialized] public int spawnItemIndex;
     [SerializeField] private float heatRate = 100f;
     [SerializeField] public float coolRate = 3f;
     [SerializeField] private float optimalFormingHeat = 750f;
@@ -51,7 +52,10 @@ public class SmiteWeapon : UdonSharpBehaviour
     private bool glowDirty;
 
     [UdonSynced] [System.NonSerialized] public bool isCompleted;
+    [System.NonSerialized] public bool isStored;
+    [System.NonSerialized] public Forge forge;
     [UdonSynced] public float qualityScore;
+    [SerializeField] private Storage storage;
 
     public int hitCount;
     private float runningMean;
@@ -353,6 +357,14 @@ public class SmiteWeapon : UdonSharpBehaviour
         runningM2 += delta * delta2;
     }
 
+    private void TryAutoStore()
+    {
+        if (!Utilities.IsValid(storage)) return;
+        storage.AutoStoreItem(this);
+        if (Utilities.IsValid(forge))
+            forge.ClearCurrentItem();
+    }
+
     public void EvaluateQuality()
     {
         if (!Networking.IsOwner(gameObject)) return;
@@ -361,6 +373,7 @@ public class SmiteWeapon : UdonSharpBehaviour
             qualityScore = 0f;
             isCompleted = true;
             RequestSerialization();
+            TryAutoStore();
             return;
         }
 
@@ -371,18 +384,6 @@ public class SmiteWeapon : UdonSharpBehaviour
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
         isCompleted = true;
         RequestSerialization();
+        TryAutoStore();
     }
-
-    public string GetQualityLabel()
-    {
-        if (!isCompleted) return "Unfinished";
-
-        if (qualityScore >= 0.9f) return "Masterwork";
-        if (qualityScore >= 0.75f) return "Excellent";
-        if (qualityScore >= 0.6f) return "Good";
-        if (qualityScore >= 0.4f) return "Fair";
-        if (qualityScore >= 0.2f) return "Poor";
-        return "Ruined";
-    }
-
 }
