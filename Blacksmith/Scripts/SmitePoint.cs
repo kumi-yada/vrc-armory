@@ -10,8 +10,8 @@ public class SmitePoint : UdonSharpBehaviour
     [SerializeField] private float smiteSpeed = 30f;
     [SerializeField] private int maxSmiteHits = 5;
     [SerializeField] private float hitRange = 20f;
-    [System.NonSerialized] private float hitAreaFrom;
-    [System.NonSerialized] private float hitAreaTo;
+    [System.NonSerialized] public float hitAreaFrom;
+    [System.NonSerialized] public float hitAreaTo;
 
     [System.NonSerialized] public float SmiteValue;
     [System.NonSerialized] public bool IsActive;
@@ -103,9 +103,15 @@ public class SmitePoint : UdonSharpBehaviour
     {
         IsActive = active;
         if (active && Utilities.IsValid(anvil))
+        {
+            anvil.SetActiveSmitePoint(this);
             anvil.ShowUI();
+        }
         else if (!active && Utilities.IsValid(anvil))
+        {
+            anvil.SetActiveSmitePoint(null);
             anvil.HideUI();
+        }
     }
 
     [NetworkCallable]
@@ -137,6 +143,7 @@ public class SmitePoint : UdonSharpBehaviour
         if (!Utilities.IsValid(hitAnvil)) return;
 
         anvil = hitAnvil;
+        anvil.SetActiveSmitePoint(this);
         anvil.ShowUI();
     }
 
@@ -146,6 +153,7 @@ public class SmitePoint : UdonSharpBehaviour
         if (!Utilities.IsValid(anvil)) return;
 
         anvil.HideUI();
+        anvil.SetActiveSmitePoint(null);
         anvil = null;
     }
 }
