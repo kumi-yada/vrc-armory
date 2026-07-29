@@ -162,6 +162,12 @@ public class SmiteWeapon : UdonSharpBehaviour
         {
             currentHeat = Mathf.Max(0f, currentHeat - coolRate * Time.deltaTime);
         }
+
+        if (!isHeated && currentHeat <= 0f && hitCount > 0 && !isCompleted && coolRate > defaultCoolRate)
+        {
+            EvaluateQuality();
+            ResetCoolRate();
+        }
     }
 
     private void UpdateHeatGlow()
