@@ -5,6 +5,7 @@ using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
 
+
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class Forge : UdonSharpBehaviour
 {

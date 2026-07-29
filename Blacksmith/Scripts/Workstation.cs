@@ -59,7 +59,7 @@ public class Workstation : UdonSharpBehaviour
         Component found = Networking.FindComponentInPlayerObjects(local, stationPodReference);
         if (!Utilities.IsValid(found)) return;
 
-        StationPod pod = found as StationPod;
+        StationPod pod = (StationPod)found;
         if (!Utilities.IsValid(pod)) return;
 
         pod.MoveTo(transform.position, transform.rotation);
@@ -72,7 +72,7 @@ public class Workstation : UdonSharpBehaviour
         Component found = Networking.FindComponentInPlayerObjects(local, stationPodReference);
         if (!Utilities.IsValid(found)) return;
 
-        StationPod pod = found as StationPod;
+        StationPod pod = (StationPod)found;
         if (!Utilities.IsValid(pod)) return;
 
         pod.Deactivate();

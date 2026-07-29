@@ -62,7 +62,10 @@ public class Leaderboard : UdonSharpBehaviour
         if (count > maxEntries)
             count = maxEntries;
 
-        PlayerEntry[] entries = new PlayerEntry[players.Length];
+        string[] names = new string[players.Length];
+        int[] levels = new int[players.Length];
+        float[] exps = new float[players.Length];
+
         for (int i = 0; i < players.Length; i++)
         {
             VRCPlayerApi player = players[i];
@@ -70,18 +73,13 @@ public class Leaderboard : UdonSharpBehaviour
 
             float exp = PlayerData.GetFloat(player, BlacksmithData.EXP_KEY);
             int level = BlacksmithData.GetLevel(exp);
-            string displayName = player.displayName;
 
-            entries[i] = new PlayerEntry
-            {
-                displayName = displayName,
-                level = level,
-                exp = exp,
-                isLocal = player.isLocal
-            };
+            names[i] = player.displayName;
+            levels[i] = level;
+            exps[i] = exp;
         }
 
-        SortEntries(entries);
+        SortEntries(names, levels, exps);
 
         if (localPlayerEntry != null)
         {
@@ -91,17 +89,21 @@ public class Leaderboard : UdonSharpBehaviour
             localPlayerEntry.text = string.Format(localPlayerFormat, localLevel, Mathf.FloorToInt(localExp));
         }
 
-        int displayCount = Mathf.Min(count, rankNameTexts.Length, rankLevelTexts.Length);
+        int displayCount = count;
+        if (displayCount > rankNameTexts.Length)
+            displayCount = rankNameTexts.Length;
+        if (displayCount > rankLevelTexts.Length)
+            displayCount = rankLevelTexts.Length;
+
         for (int i = 0; i < displayCount; i++)
         {
             if (rankRows != null && i < rankRows.Length && rankRows[i] != null)
                 rankRows[i].SetActive(true);
 
-            PlayerEntry entry = entries[i];
             if (rankNameTexts[i] != null)
-                rankNameTexts[i].text = entry.displayName;
+                rankNameTexts[i].text = names[i];
             if (rankLevelTexts[i] != null)
-                rankLevelTexts[i].text = string.Format("Lv.{0}  ({1} XP)", entry.level, Mathf.FloorToInt(entry.exp));
+                rankLevelTexts[i].text = string.Format("Lv.{0}  ({1} XP)", levels[i], Mathf.FloorToInt(exps[i]));
         }
 
         for (int i = displayCount; i < (rankRows != null ? rankRows.Length : 0); i++)
@@ -134,26 +136,24 @@ public class Leaderboard : UdonSharpBehaviour
         }
     }
 
-    private void SortEntries(PlayerEntry[] entries)
+    private void SortEntries(string[] names, int[] levels, float[] exps)
     {
-        for (int i = 1; i < entries.Length; i++)
+        for (int i = 1; i < levels.Length; i++)
         {
-            PlayerEntry key = entries[i];
+            string keyName = names[i];
+            int keyLevel = levels[i];
+            float keyExp = exps[i];
             int j = i - 1;
-            while (j >= 0 && entries[j].level < key.level)
+            while (j >= 0 && levels[j] < keyLevel)
             {
-                entries[j + 1] = entries[j];
+                names[j + 1] = names[j];
+                levels[j + 1] = levels[j];
+                exps[j + 1] = exps[j];
                 j--;
             }
-            entries[j + 1] = key;
+            names[j + 1] = keyName;
+            levels[j + 1] = keyLevel;
+            exps[j + 1] = keyExp;
         }
-    }
-
-    private struct PlayerEntry
-    {
-        public string displayName;
-        public int level;
-        public float exp;
-        public bool isLocal;
     }
 }

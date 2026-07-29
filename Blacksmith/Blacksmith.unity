@@ -211,20 +211,22 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 90057658}
+  currentHeat: 0
   isHeld: 0
   recipeName: Knife
   heatRate: 100
   coolRate: 3
   optimalFormingHeat: 750
   maxHeat: 1000
-  targetRenderer: {fileID: 516415197}
-  unfinishedMaterial: {fileID: 2100000, guid: 04a583f3b2c34b88ba50b7f37b0d5c1f, type: 2}
+  defaultCoolRate: 0
   smitePoints:
   - {fileID: 350950705}
   - {fileID: 1583654627}
   - {fileID: 614297522}
-  blendShapeRenderer: {fileID: 516415197}
-  blobShapeIndex: 0
+  heatSlider: {fileID: 0}
+  optimalRangeImage: {fileID: 0}
+  optimalRangeMarkerLow: {fileID: 0}
+  optimalRangeMarkerHigh: {fileID: 0}
   glowIntensity: 2
   heatColorRamp:
   - {r: 0, g: 0, b: 0, a: 1}
@@ -232,6 +234,15 @@ MonoBehaviour:
   - {r: 1, g: 0.5, b: 0, a: 1}
   - {r: 1, g: 0.9, b: 0, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
+  blendShapeRenderer: {fileID: 516415197}
+  blobShapeIndex: 0
+  targetRenderer: {fileID: 516415197}
+  unfinishedMaterial: {fileID: 2100000, guid: 04a583f3b2c34b88ba50b7f37b0d5c1f, type: 2}
+  qualityScore: 0
+  storage: {fileID: 0}
+  experiencePerCompletion: 100
+  hitCount: 0
+  totalAttempts: 0
 --- !u!135 &90057660
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -633,7 +644,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: ba18d72d37904bf29b7a34395f36daa1,
     type: 2}
   programSource: {fileID: 11400000, guid: 65835b0a03dea2a2696b77c3041d3500, type: 2}
@@ -664,8 +675,13 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 350950704}
   smiteSpeed: 30
   maxSmiteHits: 5
-  hitAreaFrom: 40
-  hitAreaTo: 60
+  hitRange: 20
+  perfectParticles: {fileID: 0}
+  perfectAudio: {fileID: 0}
+  goodParticles: {fileID: 0}
+  goodAudio: {fileID: 0}
+  hitParticles: {fileID: 0}
+  hitAudio: {fileID: 0}
 --- !u!135 &350950706
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1202,7 +1218,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: ba18d72d37904bf29b7a34395f36daa1,
     type: 2}
   programSource: {fileID: 11400000, guid: 65835b0a03dea2a2696b77c3041d3500, type: 2}
@@ -1233,8 +1249,13 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 614297521}
   smiteSpeed: 30
   maxSmiteHits: 5
-  hitAreaFrom: 40
-  hitAreaTo: 60
+  hitRange: 20
+  perfectParticles: {fileID: 0}
+  perfectAudio: {fileID: 0}
+  goodParticles: {fileID: 0}
+  goodAudio: {fileID: 0}
+  hitParticles: {fileID: 0}
+  hitAudio: {fileID: 0}
 --- !u!1 &664721847
 GameObject:
   m_ObjectHideFlags: 0
@@ -2350,6 +2371,10 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1338465768}
   uiCanvas: {fileID: 0}
+  smiteSlider: {fileID: 0}
+  hitZoneImage: {fileID: 0}
+  hitZoneCenterMarker: {fileID: 0}
+  sliderFillImage: {fileID: 0}
 --- !u!1 &1434149849
 GameObject:
   m_ObjectHideFlags: 0
@@ -2634,7 +2659,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 1
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: 156b86863ebb80cf797b0cdc5011d1d3,
     type: 2}
   programSource: {fileID: 11400000, guid: 589612bbe9a94e79b8588173186e7476, type: 2}
@@ -2663,11 +2688,14 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1541273897}
-  recipeNames_data: []
   spawnItems: []
-  uiCanvas: {fileID: 195769810}
-  recipeContainer: {fileID: 0}
   itemSpawnPoint: {fileID: 0}
+  uiCanvas: {fileID: 195769810}
+  recipeListPage: {fileID: 0}
+  recipeDetailsPage: {fileID: 0}
+  recipeNameText: {fileID: 0}
+  heatArea: {fileID: 0}
+  particleField: {fileID: 0}
 --- !u!65 &1541273901
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2763,7 +2791,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: ba18d72d37904bf29b7a34395f36daa1,
     type: 2}
   programSource: {fileID: 11400000, guid: 65835b0a03dea2a2696b77c3041d3500, type: 2}
@@ -2794,8 +2822,13 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1583654626}
   smiteSpeed: 30
   maxSmiteHits: 5
-  hitAreaFrom: 40
-  hitAreaTo: 60
+  hitRange: 20
+  perfectParticles: {fileID: 0}
+  perfectAudio: {fileID: 0}
+  goodParticles: {fileID: 0}
+  goodAudio: {fileID: 0}
+  hitParticles: {fileID: 0}
+  hitAudio: {fileID: 0}
 --- !u!1 &1591110558 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3606229401123699402, guid: 9bc9da9564f9e614cab11d85a7ee0100,
@@ -3049,7 +3082,7 @@ MonoBehaviour:
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
-  _syncMethod: 2
+  _syncMethod: 3
   serializedProgramAsset: {fileID: 11400000, guid: 07024a86547c21282be53f017d33cef7,
     type: 2}
   programSource: {fileID: 11400000, guid: 85c059912207f6c92beec8b40dfa9c3a, type: 2}
