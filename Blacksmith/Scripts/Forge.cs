@@ -5,7 +5,7 @@ using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
 
-[UdonBehaviourSyncMode(BehaviourSyncMode.None)]
+[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class Forge : UdonSharpBehaviour
 {
     [Header("Items")]
@@ -17,12 +17,15 @@ public class Forge : UdonSharpBehaviour
     [SerializeField] private GameObject recipeListPage;
     [SerializeField] private GameObject recipeDetailsPage;
     [SerializeField] private TextMeshProUGUI recipeNameText;
-
-    [Header("Interaction")]
     [SerializeField] private float hideUIDistance = 3f;
+
+    [Header("Heat")]
+    [SerializeField] private GameObject heatArea;
+    [SerializeField] private ParticleSystem particleField;
 
     private int selectedRecipeIndex = -1;
     private GameObject currentItem;
+    [UdonSynced] private bool isActive;
 
     void Start()
     {
@@ -31,6 +34,11 @@ public class Forge : UdonSharpBehaviour
 
         recipeListPage.SetActive(true);
         recipeDetailsPage.SetActive(false);
+
+        if (Utilities.IsValid(heatArea))
+            heatArea.SetActive(false);
+        if (Utilities.IsValid(particleField))
+            particleField.Stop();
     }
 
     void Update()
@@ -45,6 +53,16 @@ public class Forge : UdonSharpBehaviour
 
         if (!Utilities.IsValid(uiCanvas)) return;
         uiCanvas.enabled = false;
+    }
+
+    public override void OnDeserialization()
+    {
+        if (!Utilities.IsValid(particleField)) return;
+
+        if (isActive)
+            particleField.Play();
+        else
+            particleField.Stop();
     }
 
     public void SelectRecipe(int index)
@@ -78,6 +96,7 @@ public class Forge : UdonSharpBehaviour
         if (Utilities.IsValid(currentItem))
             currentItem.SetActive(false);
         currentItem = null;
+        StopHeat();
 
         recipeDetailsPage.SetActive(false);
         recipeListPage.SetActive(true);
@@ -95,6 +114,14 @@ public class Forge : UdonSharpBehaviour
         if (!Utilities.IsValid(currentItem))
             return;
 
+        InitSelectedWeapon();
+        StartHeat();
+
+        RequestSerialization();
+    }
+
+    private void InitSelectedWeapon()
+    {
         Vector3 pos = Utilities.IsValid(itemSpawnPoint)
             ? itemSpawnPoint.position
             : transform.position + Vector3.up * 0.5f;
@@ -102,6 +129,25 @@ public class Forge : UdonSharpBehaviour
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
         currentItem.SetActive(true);
-        Networking.SetOwner(Networking.LocalPlayer, currentItem);
+    }
+
+    private void StartHeat()
+    {
+        isActive = true;
+        if (Utilities.IsValid(heatArea))
+            heatArea.SetActive(true);
+        if (Utilities.IsValid(particleField))
+            particleField.Play();
+        RequestSerialization();
+    }
+
+    private void StopHeat()
+    {
+        isActive = false;
+        if (Utilities.IsValid(heatArea))
+            heatArea.SetActive(false);
+        if (Utilities.IsValid(particleField))
+            particleField.Stop();
+        RequestSerialization();
     }
 }
