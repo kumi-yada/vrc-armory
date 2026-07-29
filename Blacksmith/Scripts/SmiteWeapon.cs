@@ -93,6 +93,10 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         if (!isInEditor)
             RequestSerialization();
+
+        var firstPoint = GetActiveSmitePoint();
+        if (firstPoint != null)
+            firstPoint.SetActive(true);
     }
 
 
@@ -228,9 +232,17 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         if (smitePoints == null || smitePoints.Length == 0) return;
 
+        var current = GetActiveSmitePoint();
+        if (current != null)
+            current.SetActive(false);
+
         currentSmiteIndex++;
         if (currentSmiteIndex > smitePoints.Length)
             currentSmiteIndex = smitePoints.Length;
+
+        var next = GetActiveSmitePoint();
+        if (next != null)
+            next.SetActive(true);
 
         UpdateBlobShape();
         RequestSerialization();

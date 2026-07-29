@@ -9,8 +9,9 @@ public class SmitePoint : UdonSharpBehaviour
 {
     [SerializeField] private float smiteSpeed = 30f;
     [SerializeField] private int maxSmiteHits = 5;
-    [SerializeField] private float hitAreaFrom = 40f;
-    [SerializeField] private float hitAreaTo = 60f;
+    [SerializeField] private float hitRange = 20f;
+    [System.NonSerialized] private float hitAreaFrom;
+    [System.NonSerialized] private float hitAreaTo;
 
     [System.NonSerialized] public float SmiteValue;
     [System.NonSerialized] public bool IsActive;
@@ -32,6 +33,15 @@ public class SmitePoint : UdonSharpBehaviour
     void Start()
     {
         weapon = GetComponentInParent<SmiteWeapon>();
+        RandomizeHitArea();
+    }
+
+    private void RandomizeHitArea()
+    {
+        float halfRange = hitRange / 2f;
+        float center = Random.Range(halfRange, 100f - halfRange);
+        hitAreaFrom = center - halfRange;
+        hitAreaTo = center + halfRange;
     }
 
     void Update()
@@ -77,18 +87,25 @@ public class SmitePoint : UdonSharpBehaviour
             SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlaySmiteEffects), accuracy);
 
             CurrentSmiteHits++;
+            RandomizeHitArea();
             if (CurrentSmiteHits >= maxSmiteHits)
             {
                 IsFinished = true;
-                IsActive = false;
-                if (Utilities.IsValid(anvil))
-                    anvil.HideUI();
                 if (Utilities.IsValid(weapon))
                     weapon.AdvanceSmiteIndex();
             }
         }
 
         return hit;
+    }
+
+    public void SetActive(bool active)
+    {
+        IsActive = active;
+        if (active && Utilities.IsValid(anvil))
+            anvil.ShowUI();
+        else if (!active && Utilities.IsValid(anvil))
+            anvil.HideUI();
     }
 
     [NetworkCallable]
@@ -114,23 +131,20 @@ public class SmitePoint : UdonSharpBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.name.Contains("Anvil")) return;
-        if (IsFinished) return;
+        if (IsFinished || !IsActive) return;
 
         var hitAnvil = other.GetComponent<Anvil>();
         if (!Utilities.IsValid(hitAnvil)) return;
 
         anvil = hitAnvil;
-        IsActive = true;
         anvil.ShowUI();
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!other.name.Contains("Anvil")) return;
-
         if (!Utilities.IsValid(anvil)) return;
 
-        IsActive = false;
         anvil.HideUI();
         anvil = null;
     }
