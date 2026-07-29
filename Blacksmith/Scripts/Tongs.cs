@@ -2,7 +2,7 @@
 using UnityEngine;
 using VRC.SDKBase;
 
-[UdonBehaviourSyncMode(BehaviourSyncMode.NoVariableSync)]
+[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class Tongs : UdonSharpBehaviour
 {
     public Transform attachPoint;
@@ -52,14 +52,8 @@ public class Tongs : UdonSharpBehaviour
 
         if (Utilities.IsValid(nearbySmiteWeapon))
         {
-            Networking.SetOwner(Networking.LocalPlayer, nearbySmiteWeapon.gameObject);
             heldSmiteWeapon = nearbySmiteWeapon;
             nearbySmiteWeapon.OnGrabbed();
         }
-    }
-
-    public bool IsHoldingSmiteWeapon()
-    {
-        return heldSmiteWeapon != null;
     }
 }

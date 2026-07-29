@@ -1,8 +1,10 @@
 ﻿using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
+using VRC.Udon.Common.Interfaces;
+using VRC.SDK3.UdonNetworkCalling;
 
-[UdonBehaviourSyncMode(BehaviourSyncMode.NoVariableSync)]
+[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmitePoint : UdonSharpBehaviour
 {
     [SerializeField] private float smiteSpeed = 30f;
@@ -14,9 +16,16 @@ public class SmitePoint : UdonSharpBehaviour
     [System.NonSerialized] public bool IsActive;
     [System.NonSerialized] public bool IsFinished;
     [System.NonSerialized] public int CurrentSmiteHits;
-    [System.NonSerialized] public float LastHitAccuracy;
     [System.NonSerialized] public SmiteWeapon weapon;
     private Anvil anvil;
+
+    [Header("Effects")]
+    [SerializeField] private ParticleSystem perfectParticles;
+    [SerializeField] private AudioSource perfectAudio;
+    [SerializeField] private ParticleSystem goodParticles;
+    [SerializeField] private AudioSource goodAudio;
+    [SerializeField] private ParticleSystem hitParticles;
+    [SerializeField] private AudioSource hitAudio;
 
     private bool movingUp = true;
 
@@ -52,10 +61,7 @@ public class SmitePoint : UdonSharpBehaviour
     public bool CheckHit()
     {
         if (!IsActive || IsFinished)
-        {
-            LastHitAccuracy = 0f;
             return false;
-        }
 
         bool hit = SmiteValue >= hitAreaFrom && SmiteValue <= hitAreaTo;
 
@@ -63,10 +69,12 @@ public class SmitePoint : UdonSharpBehaviour
         {
             float center = (hitAreaFrom + hitAreaTo) / 2f;
             float halfRange = (hitAreaTo - hitAreaFrom) / 2f;
-            LastHitAccuracy = 1f - Mathf.Abs(SmiteValue - center) / halfRange;
+            float accuracy = 1f - Mathf.Abs(SmiteValue - center) / halfRange;
 
             if (Utilities.IsValid(weapon))
-                weapon.RecordHit(LastHitAccuracy);
+                weapon.RecordHit(accuracy);
+
+            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlaySmiteEffects), accuracy);
 
             CurrentSmiteHits++;
             if (CurrentSmiteHits >= maxSmiteHits)
@@ -79,12 +87,28 @@ public class SmitePoint : UdonSharpBehaviour
                     weapon.AdvanceSmiteIndex();
             }
         }
-        else
-        {
-            LastHitAccuracy = 0f;
-        }
 
         return hit;
+    }
+
+    [NetworkCallable]
+    public void PlaySmiteEffects(float accuracy)
+    {
+        if (accuracy >= 0.9f)
+        {
+            if (Utilities.IsValid(perfectParticles)) perfectParticles.Play();
+            if (Utilities.IsValid(perfectAudio)) perfectAudio.Play();
+        }
+        else if (accuracy >= 0.6f)
+        {
+            if (Utilities.IsValid(goodParticles)) goodParticles.Play();
+            if (Utilities.IsValid(goodAudio)) goodAudio.Play();
+        }
+        else
+        {
+            if (Utilities.IsValid(hitParticles)) hitParticles.Play();
+            if (Utilities.IsValid(hitAudio)) hitAudio.Play();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
