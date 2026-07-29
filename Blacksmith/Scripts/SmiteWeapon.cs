@@ -8,11 +8,11 @@ using VRC.Udon;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmiteWeapon : UdonSharpBehaviour
 {
-    [UdonSynced] public float currentHeat;
+    [UdonSynced] [System.NonSerialized] public float currentHeat;
     [UdonSynced] [System.NonSerialized] public bool isHeated;
-    [UdonSynced] public bool isHeld;
-    [UdonSynced] private Vector3 syncedPosition;
-    [UdonSynced] private Quaternion syncedRotation;
+    [UdonSynced] [System.NonSerialized] public bool isHeld;
+    [UdonSynced] [System.NonSerialized] private Vector3 syncedPosition;
+    [UdonSynced] [System.NonSerialized] private Quaternion syncedRotation;
 
     [SerializeField] public string recipeName;
     [System.NonSerialized] public int spawnItemIndex;
@@ -20,14 +20,12 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] public float coolRate = 3f;
     [SerializeField] private float optimalFormingHeat = 750f;
     [SerializeField] private float maxHeat = 1000f;
-    public float defaultCoolRate;
+    [System.NonSerialized] public float defaultCoolRate;
 
 
-    [Header("Smiting")]
     [SerializeField] private SmitePoint[] smitePoints;
     [UdonSynced] private int currentSmiteIndex;
 
-    [Header("Heat")]
     [SerializeField] private float glowIntensity = 2f;
     [SerializeField] private Color[] heatColorRamp = new Color[]
     {
@@ -43,26 +41,26 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] private int blobShapeIndex;
     [SerializeField] private Renderer targetRenderer;
     [SerializeField] private Material unfinishedMaterial;
-    private Material[] originalSharedMaterials;
-    private MaterialPropertyBlock propBlock;
-    private Color currentEmission;
-    private bool glowDirty;
+    [System.NonSerialized] private Material[] originalSharedMaterials;
+    [System.NonSerialized] private MaterialPropertyBlock propBlock;
+    [System.NonSerialized] private Color currentEmission;
+    [System.NonSerialized] private bool glowDirty;
 
     [UdonSynced] [System.NonSerialized] public bool isCompleted;
     [System.NonSerialized] public bool isStored;
     [System.NonSerialized] public Forge forge;
-    [UdonSynced] public float qualityScore;
+    [UdonSynced] [System.NonSerialized] public float qualityScore;
     [SerializeField] private Storage storage;
     [SerializeField] private float experiencePerCompletion = 10f;
 
-    public int hitCount;
-    private float runningMean;
-    private float runningM2;
+    [System.NonSerialized] public int hitCount;
+    [System.NonSerialized] private float runningMean;
+    [System.NonSerialized] private float runningM2;
 
-    public int totalAttempts;
-    private bool wasCompleted;
+    [System.NonSerialized] public int totalAttempts;
+    [System.NonSerialized] private bool wasCompleted;
 
-    bool isInEditor;
+    [System.NonSerialized] bool isInEditor;
 
     void Awake()
     {
