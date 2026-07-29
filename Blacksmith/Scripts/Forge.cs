@@ -1,5 +1,6 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
@@ -7,113 +8,79 @@ using TMPro;
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class Forge : UdonSharpBehaviour
 {
-    [Header("Data")]
-    [SerializeField] private string[] recipeNames_data;
-
     [Header("Items")]
     [SerializeField] private GameObject[] spawnItems;
+    [SerializeField] private Transform itemSpawnPoint;
 
     [Header("UI")]
     [SerializeField] private Canvas uiCanvas;
-    [SerializeField] private Transform recipeContainer;
+    [SerializeField] private GameObject recipeListPage;
+    [SerializeField] private GameObject recipeDetailsPage;
+    [SerializeField] private TextMeshProUGUI recipeNameText;
 
-    [Header("Spawn")]
-    [SerializeField] private Transform itemSpawnPoint;
+    [Header("Interaction")]
+    [SerializeField] private float hideUIDistance = 3f;
 
-    private RecipeRow[] recipeRows;
-    private string[] recipeNames;
-    private string[] recipeDetails;
     private int selectedRecipeIndex = -1;
-    private bool selectingRecipe;
     private GameObject currentItem;
-    private SmiteWeapon currentSmiteWeapon;
-    private bool isActive;
 
     void Start()
     {
         if (Utilities.IsValid(uiCanvas))
             uiCanvas.enabled = false;
 
-        if (recipeRows == null || recipeRows.Length == 0)
-        {
-            if (Utilities.IsValid(recipeContainer))
-                recipeRows = recipeContainer.GetComponentsInChildren<RecipeRow>(true);
-            else
-                recipeRows = GetComponentsInChildren<RecipeRow>(true);
-        }
+        recipeListPage.SetActive(true);
+        recipeDetailsPage.SetActive(false);
+    }
 
-        recipeNames = new string[recipeRows.Length];
-        recipeDetails = new string[recipeRows.Length];
+    void Update()
+    {
+        if (!Utilities.IsValid(uiCanvas)) return;
+        if (!uiCanvas.enabled) return;
 
-        for (int i = 0; i < recipeRows.Length; i++)
-        {
-            RecipeRow row = recipeRows[i];
-            if (!Utilities.IsValid(row))
-                continue;
+        VRCPlayerApi localPlayer = Networking.LocalPlayer;
+        if (!Utilities.IsValid(localPlayer)) return;
 
-            row.Setup(this, i);
+        if (Vector3.Distance(owner.GetPosition(), transform.position) <= hideUIDistance) return;
 
-            if (i < recipeNames_data.Length)
-            {
-                recipeNames[i] = recipeNames_data[i];
-                recipeDetails[i] = recipeNames_data[i];
-                row.SetDisplay(recipeNames[i], recipeDetails[i], false);
-            }
-
-            row.gameObject.SetActive(false);
-        }
+        if (!Utilities.IsValid(uiCanvas)) return;
+        uiCanvas.enabled = false;
     }
 
     public void SelectRecipe(int index)
     {
         if (!Networking.IsOwner(gameObject)) return;
-        if (!selectingRecipe) return;
+        if (Utilities.IsValid(currentItem)) return;
 
         selectedRecipeIndex = index;
+        SpawnSmiteWeapon();
+
+        recipeListPage.SetActive(false);
+        recipeDetailsPage.SetActive(true);
+
+        SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
+        if (Utilities.IsValid(recipeNameText) && Utilities.IsValid(weapon))
+            recipeNameText.text = weapon.recipeName;
     }
 
     public override void Interact()
     {
         if (!Networking.IsOwner(gameObject)) return;
-        if (isActive || selectingRecipe)
-            return;
 
-        selectingRecipe = true;
-        selectedRecipeIndex = 0;
         if (Utilities.IsValid(uiCanvas))
-            uiCanvas.enabled = true;
-    }
-
-    public void ConfirmRecipe()
-    {
-        if (!Networking.IsOwner(gameObject)) return;
-        selectingRecipe = false;
-        HideUI();
-
-        SpawnItem();
-        SetActive(true);
+            uiCanvas.enabled = !uiCanvas.enabled;
     }
 
     public void CancelSelection()
     {
         if (!Networking.IsOwner(gameObject)) return;
-        selectingRecipe = false;
-        HideUI();
-        if (Utilities.IsValid(uiCanvas))
-            uiCanvas.enabled = false;
-    }
 
-    private void HideUI()
-    {
-        if (Utilities.IsValid(uiCanvas))
-            uiCanvas.enabled = false;
-    }
+        if (Utilities.IsValid(currentItem))
+            currentItem.SetActive(false);
+        currentItem = null;
 
-    public void SetActive(bool active)
-    {
-        isActive = active;
-        if (Utilities.IsValid(currentSmiteWeapon))
-            currentSmiteWeapon.isHeated = active;
+        recipeDetailsPage.SetActive(false);
+        recipeListPage.SetActive(true);
     }
 
     public void SpawnSmiteWeapon()
@@ -135,17 +102,5 @@ public class Forge : UdonSharpBehaviour
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
         currentItem.SetActive(true);
-
-        currentSmiteWeapon = currentItem.GetComponent<SmiteWeapon>();
-        if (Utilities.IsValid(currentSmiteWeapon))
-        {
-            currentSmiteWeapon.recipeName = recipeNames_data[selectedRecipeIndex];
-            currentSmiteWeapon.isHeated = isActive;
-        }
-    }
-
-    private void SpawnItem()
-    {
-        SpawnSmiteWeapon();
     }
 }

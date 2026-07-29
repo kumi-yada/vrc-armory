@@ -219,6 +219,18 @@ public class SmiteWeapon : UdonSharpBehaviour
         coolRate = defaultCoolRate;
     }
 
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.name == "HeatArea")
+            isHeated = true;
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.name == "HeatArea")
+            isHeated = false;
+    }
+
     public void OnGrabbed()
     {
         isHeld = true;
