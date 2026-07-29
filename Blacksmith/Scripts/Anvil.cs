@@ -13,6 +13,7 @@ public class Anvil : UdonSharpBehaviour
     [SerializeField] private Image hitZoneImage;
     [SerializeField] private RectTransform hitZoneCenterMarker;
     [SerializeField] private Image sliderFillImage;
+    [SerializeField] private RectTransform sliderValueMarker;
 
     [System.NonSerialized] public SmitePoint activeSmitePoint;
 
@@ -53,6 +54,16 @@ public class Anvil : UdonSharpBehaviour
 
     void Update()
     {
+        if (Utilities.IsValid(uiCanvas) && uiCanvas.enabled)
+        {
+            VRCPlayerApi player = Networking.LocalPlayer;
+            if (Utilities.IsValid(player))
+            {
+                Vector3 target = player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head).position;
+                uiCanvas.transform.rotation = Quaternion.LookRotation(target - uiCanvas.transform.position);
+            }
+        }
+
         if (!Utilities.IsValid(activeSmitePoint)) return;
         if (!activeSmitePoint.IsActive || activeSmitePoint.IsFinished) return;
 
@@ -60,20 +71,56 @@ public class Anvil : UdonSharpBehaviour
         float hitFrom = activeSmitePoint.hitAreaFrom / 100f;
         float hitTo = activeSmitePoint.hitAreaTo / 100f;
 
-        if (Utilities.IsValid(smiteSlider))
-            smiteSlider.value = normValue;
+        bool leftToRight = smiteSlider.direction == Slider.Direction.LeftToRight;
+        bool bottomToTop = smiteSlider.direction == Slider.Direction.BottomToTop;
 
         if (Utilities.IsValid(hitZoneImage))
         {
-            hitZoneImage.rectTransform.anchorMin = new Vector2(hitFrom, 0f);
-            hitZoneImage.rectTransform.anchorMax = new Vector2(hitTo, 1f);
+            if (leftToRight)
+            {
+                hitZoneImage.rectTransform.anchorMin = new Vector2(hitFrom, 0f);
+                hitZoneImage.rectTransform.anchorMax = new Vector2(hitTo, 1f);
+                hitZoneImage.rectTransform.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                hitZoneImage.rectTransform.anchorMin = new Vector2(0f, hitFrom);
+                hitZoneImage.rectTransform.anchorMax = new Vector2(1f, hitTo);
+                hitZoneImage.rectTransform.anchoredPosition = Vector2.zero;
+            }
         }
 
         if (Utilities.IsValid(hitZoneCenterMarker))
         {
             float center = (hitFrom + hitTo) / 2f;
-            hitZoneCenterMarker.anchorMin = new Vector2(center, 0f);
-            hitZoneCenterMarker.anchorMax = new Vector2(center, 1f);
+            if (leftToRight)
+            {
+                hitZoneCenterMarker.anchorMin = new Vector2(center, 0f);
+                hitZoneCenterMarker.anchorMax = new Vector2(center, 1f);
+                hitZoneCenterMarker.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                hitZoneCenterMarker.anchorMin = new Vector2(0f, center);
+                hitZoneCenterMarker.anchorMax = new Vector2(1f, center);
+                hitZoneCenterMarker.anchoredPosition = Vector2.zero;
+            }
+        }
+
+        if (Utilities.IsValid(sliderValueMarker))
+        {
+            if (leftToRight)
+            {
+                sliderValueMarker.anchorMin = new Vector2(normValue, 0f);
+                sliderValueMarker.anchorMax = new Vector2(normValue, 1f);
+                sliderValueMarker.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                sliderValueMarker.anchorMin = new Vector2(0f, normValue);
+                sliderValueMarker.anchorMax = new Vector2(1f, normValue);
+                sliderValueMarker.anchoredPosition = Vector2.zero;
+            }
         }
 
         if (Utilities.IsValid(sliderFillImage))
