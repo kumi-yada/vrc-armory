@@ -6,18 +6,18 @@ using VRC.Udon;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmiteWeapon : UdonSharpBehaviour
 {
-    [System.NonSerialized] public float currentHeat;
-    [System.NonSerialized] public bool isHeated;
+    [UdonSynced] public float currentHeat;
+    [UdonSynced] [System.NonSerialized] public bool isHeated;
     [UdonSynced] public bool isHeld;
     [UdonSynced] private Vector3 syncedPosition;
     [UdonSynced] private Quaternion syncedRotation;
 
     [SerializeField] public string recipeName;
     [SerializeField] private float heatRate = 100f;
-    [SerializeField] private float coolRate = 3f;
+    [SerializeField] public float coolRate = 3f;
     [SerializeField] private float optimalFormingHeat = 750f;
     [SerializeField] private float maxHeat = 1000f;
-    private float defaultCoolRate;
+    public float defaultCoolRate;
 
     [Header("Materials")]
     [SerializeField] private Renderer targetRenderer;
@@ -26,24 +26,11 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     [Header("Smiting")]
     [SerializeField] private SmitePoint[] smitePoints;
-    private int currentSmiteIndex;
+    [UdonSynced] private int currentSmiteIndex;
 
     [Header("Blend Shape")]
     [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
     [SerializeField] private int blobShapeIndex;
-    private int lastFinishedCount = -1;
-
-    public SmitePoint GetActiveSmitePoint()
-    {
-        if (smitePoints == null || smitePoints.Length == 0) return null;
-
-        while (currentSmiteIndex < smitePoints.Length && smitePoints[currentSmiteIndex].IsFinished)
-            currentSmiteIndex++;
-
-        if (currentSmiteIndex >= smitePoints.Length) return null;
-
-        return smitePoints[currentSmiteIndex];
-    }
 
     [Header("Heat Glow")]
     [SerializeField] private float glowIntensity = 2f;
@@ -59,11 +46,12 @@ public class SmiteWeapon : UdonSharpBehaviour
     private Color currentEmission;
     private bool glowDirty;
 
-    [System.NonSerialized] public bool isCompleted;
-    [System.NonSerialized] public float qualityScore;
+    [UdonSynced] [System.NonSerialized] public bool isCompleted;
+    [UdonSynced] public float qualityScore;
     [System.NonSerialized] public float[] hitScores;
-    private int hitCount;
-    private int totalAttempts;
+
+    public int hitCount;
+    public int totalAttempts;
     private bool wasCompleted;
 
     bool isInEditor;
@@ -113,13 +101,38 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         if (!isHeld)
             transform.SetPositionAndRotation(syncedPosition, syncedRotation);
+
+        if (!Networking.IsOwner(gameObject))
+        {
+            UpdateHeatGlow();
+            UpdateBlobShape();
+        }
+
+        UpdateMaterialForCompleted();
+    }
+
+    private void UpdateMaterialForCompleted()
+    {
+        if (isCompleted && !wasCompleted && targetRenderer != null)
+        {
+            wasCompleted = true;
+            if (originalSharedMaterials != null)
+                targetRenderer.sharedMaterials = originalSharedMaterials;
+        }
     }
 
     void Update()
     {
-        if (isInEditor)
-            return;
+        if (isInEditor) return;
 
+        UpdateHeldPosition();
+        ProcessHeatAndCoolOff();
+        UpdateMaterialForCompleted();
+        UpdateHeatGlow();
+    }
+
+    private void UpdateHeldPosition()
+    {
         if (isHeld)
         {
             VRCPlayerApi owner = Networking.GetOwner(gameObject);
@@ -130,7 +143,10 @@ public class SmiteWeapon : UdonSharpBehaviour
                     transform.SetPositionAndRotation(attachPt.position, attachPt.rotation);
             }
         }
+    }
 
+    private void ProcessHeatAndCoolOff()
+    {
         if (isHeated)
         {
             float effectiveRate = heatRate;
@@ -140,16 +156,6 @@ public class SmiteWeapon : UdonSharpBehaviour
         {
             currentHeat = Mathf.Max(0f, currentHeat - coolRate * Time.deltaTime);
         }
-
-        if (isCompleted && !wasCompleted && targetRenderer != null)
-        {
-            wasCompleted = true;
-            if (originalSharedMaterials != null)
-                targetRenderer.sharedMaterials = originalSharedMaterials;
-        }
-
-        UpdateHeatGlow();
-        UpdateBlobShape();
     }
 
     private void UpdateHeatGlow()
@@ -175,24 +181,26 @@ public class SmiteWeapon : UdonSharpBehaviour
         glowDirty = false;
     }
 
+    public void AdvanceSmiteIndex()
+    {
+        if (smitePoints == null || smitePoints.Length == 0) return;
+
+        currentSmiteIndex++;
+        if (currentSmiteIndex > smitePoints.Length)
+            currentSmiteIndex = smitePoints.Length;
+
+        UpdateBlobShape();
+        RequestSerialization();
+    }
+
     private void UpdateBlobShape()
     {
         if (blendShapeRenderer == null) return;
-        if (smitePoints == null || smitePoints.Length == 0) return;
 
-        int total = smitePoints.Length;
-        int finished = 0;
-        for (int i = 0; i < total; i++)
-        {
-            if (smitePoints[i].IsFinished)
-                finished++;
-        }
-
-        if (finished == lastFinishedCount) return;
-        lastFinishedCount = finished;
-
-        float blobValue = 100f * (1f - (float)finished / total);
-        blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, blobValue);
+        float blobVal = smitePoints != null && smitePoints.Length > 0
+            ? 100f * (1f - (float)currentSmiteIndex / smitePoints.Length)
+            : 100f;
+        blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, blobVal);
     }
 
     private Color SampleHeatRamp(float t)
@@ -221,19 +229,11 @@ public class SmiteWeapon : UdonSharpBehaviour
         return null;
     }
 
-    public bool IsHeld()
+    public SmitePoint GetActiveSmitePoint()
     {
-        return isHeld;
-    }
-
-    public float GetHeat()
-    {
-        return currentHeat;
-    }
-
-    public void SetCoolRate(float rate)
-    {
-        coolRate = rate;
+        if (smitePoints == null || smitePoints.Length == 0) return null;
+        if (currentSmiteIndex >= smitePoints.Length) return null;
+        return smitePoints[currentSmiteIndex];
     }
 
     public void ResetCoolRate()
@@ -243,14 +243,24 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (!Networking.IsOwner(gameObject)) return;
+
         if (other.gameObject.name == "HeatArea")
+        {
             isHeated = true;
+            RequestSerialization();
+        }
     }
 
     void OnTriggerExit(Collider other)
     {
+        if (!Networking.IsOwner(gameObject)) return;
+
         if (other.gameObject.name == "HeatArea")
+        {
             isHeated = false;
+            RequestSerialization();
+        }
     }
 
     public void OnGrabbed()
@@ -267,6 +277,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     public void RecordHit(float accuracy)
     {
+        if (!Networking.IsOwner(gameObject)) return;
         if (isCompleted) return;
 
         totalAttempts++;
@@ -289,10 +300,12 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     public void EvaluateQuality()
     {
+        if (!Networking.IsOwner(gameObject)) return;
         if (isCompleted || hitCount == 0)
         {
             qualityScore = 0f;
             isCompleted = true;
+            RequestSerialization();
             return;
         }
 
@@ -313,6 +326,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
         isCompleted = true;
+        RequestSerialization();
     }
 
     public string GetQualityLabel()
@@ -327,18 +341,4 @@ public class SmiteWeapon : UdonSharpBehaviour
         return "Ruined";
     }
 
-    public float GetQualityScore()
-    {
-        return qualityScore;
-    }
-
-    public int GetHitCount()
-    {
-        return hitCount;
-    }
-
-    public int GetTotalAttempts()
-    {
-        return totalAttempts;
-    }
 }

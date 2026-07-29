@@ -19,7 +19,7 @@ public class Bucket : UdonSharpBehaviour
 
         containedSmiteWeapon = weapon;
         containedSmiteWeapon.isHeated = false;
-        containedSmiteWeapon.SetCoolRate(coolRate);
+        containedSmiteWeapon.coolRate = coolRate;
     }
 
     public void OnTriggerExit(Collider other)
@@ -40,9 +40,11 @@ public class Bucket : UdonSharpBehaviour
         if (!Utilities.IsValid(containedSmiteWeapon))
             return;
 
-        if (containedSmiteWeapon.GetHeat() <= 0f)
+        if (!Networking.IsOwner(containedSmiteWeapon.gameObject)) return;
+
+        if (containedSmiteWeapon.currentHeat <= 0f)
         {
-            if (containedSmiteWeapon.GetHitCount() > 0)
+            if (containedSmiteWeapon.hitCount > 0)
                 containedSmiteWeapon.EvaluateQuality();
             containedSmiteWeapon.ResetCoolRate();
             containedSmiteWeapon = null;

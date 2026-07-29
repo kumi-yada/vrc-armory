@@ -75,6 +75,8 @@ public class SmitePoint : UdonSharpBehaviour
                 IsActive = false;
                 if (Utilities.IsValid(anvil))
                     anvil.HideUI();
+                if (Utilities.IsValid(weapon))
+                    weapon.AdvanceSmiteIndex();
             }
         }
         else
