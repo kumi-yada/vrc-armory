@@ -102,5 +102,6 @@ public class Forge : UdonSharpBehaviour
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
         currentItem.SetActive(true);
+        Networking.SetOwner(Networking.LocalPlayer, currentItem);
     }
 }

@@ -9,6 +9,8 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public float currentHeat;
     [System.NonSerialized] public bool isHeated;
     [UdonSynced] public bool isHeld;
+    [UdonSynced] private Vector3 syncedPosition;
+    [UdonSynced] private Quaternion syncedRotation;
 
     [SerializeField] public string recipeName;
     [SerializeField] private float heatRate = 100f;
@@ -66,6 +68,12 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     bool isInEditor;
 
+    void Awake()
+    {
+        syncedPosition = transform.position;
+        syncedRotation = transform.rotation;
+    }
+
     void Start()
     {
         isInEditor = Networking.LocalPlayer == null;
@@ -90,8 +98,22 @@ public class SmiteWeapon : UdonSharpBehaviour
         currentEmission = Color.black;
         glowDirty = true;
 
+        if (!isInEditor)
+            RequestSerialization();
     }
 
+
+    public override void OnPreSerialization()
+    {
+        syncedPosition = transform.position;
+        syncedRotation = transform.rotation;
+    }
+
+    public override void OnDeserialization()
+    {
+        if (!isHeld)
+            transform.SetPositionAndRotation(syncedPosition, syncedRotation);
+    }
 
     void Update()
     {
