@@ -58,9 +58,9 @@ public class InventorySlot : UdonSharpBehaviour
         if (recipeNameText != null)
         {
             string rn = "";
-            if (forge != null && itemIndex >= 0 && itemIndex < forge.spawnItems.Length)
+            if (forge != null)
             {
-                var weapon = forge.spawnItems[itemIndex].GetComponent<SmiteWeapon>();
+                var weapon = forge.GetItemByIndex(itemIndex);
                 if (weapon != null)
                     rn = weapon.recipeName;
             }

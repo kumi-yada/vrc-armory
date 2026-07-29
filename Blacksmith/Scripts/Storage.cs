@@ -15,7 +15,7 @@ public class Storage : UdonSharpBehaviour
         if (!Utilities.IsValid(weapon)) return;
 
         int idx = weapon.spawnItemIndex;
-        if (idx < 0 || idx >= forge.spawnItems.Length) return;
+        if (idx < 0 || idx >= forge.ItemCount) return;
 
         for (int i = 0; i < slots.Length; i++)
         {
@@ -43,7 +43,7 @@ public class Storage : UdonSharpBehaviour
         }
 
         int idx = weapon.spawnItemIndex;
-        if (idx < 0 || idx >= forge.spawnItems.Length) return;
+        if (idx < 0 || idx >= forge.ItemCount) return;
 
         for (int i = 0; i < slots.Length; i++)
         {

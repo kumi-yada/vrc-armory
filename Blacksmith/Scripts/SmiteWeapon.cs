@@ -28,10 +28,6 @@ public class SmiteWeapon : UdonSharpBehaviour
     [UdonSynced] private int currentSmiteIndex;
 
     [Header("Heat")]
-    [SerializeField] private Slider heatSlider;
-    [SerializeField] private Image optimalRangeImage;
-    [SerializeField] private RectTransform optimalRangeMarkerLow;
-    [SerializeField] private RectTransform optimalRangeMarkerHigh;
     [SerializeField] private float glowIntensity = 2f;
     [SerializeField] private Color[] heatColorRamp = new Color[]
     {
@@ -57,7 +53,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public Forge forge;
     [UdonSynced] public float qualityScore;
     [SerializeField] private Storage storage;
-    [SerializeField] private float experiencePerCompletion = 100f;
+    [SerializeField] private float experiencePerCompletion = 10f;
 
     public int hitCount;
     private float runningMean;
@@ -72,6 +68,43 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         syncedPosition = transform.position;
         syncedRotation = transform.rotation;
+    }
+
+    public void ResetState()
+    {
+        currentHeat = 0f;
+        isHeated = false;
+        isHeld = false;
+        isCompleted = false;
+        wasCompleted = false;
+        qualityScore = 0f;
+        hitCount = 0;
+        totalAttempts = 0;
+        runningMean = 0f;
+        runningM2 = 0f;
+        coolRate = defaultCoolRate;
+        currentSmiteIndex = 0;
+        currentEmission = Color.black;
+        glowDirty = true;
+
+        if (blendShapeRenderer != null)
+            blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, 100f);
+
+        if (targetRenderer != null)
+        {
+            if (unfinishedMaterial != null)
+                targetRenderer.sharedMaterial = unfinishedMaterial;
+        }
+
+        syncedPosition = transform.position;
+        syncedRotation = transform.rotation;
+
+        var firstPoint = GetActiveSmitePoint();
+        if (firstPoint != null)
+            firstPoint.SetActive(true);
+
+        RequestSerialization();
+        Debug.Log("SmiteWeapon: ResetState: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
 
     void Start()
@@ -205,32 +238,52 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     private void UpdateHeatSlider()
     {
-        if (heatSlider == null) return;
+        if (forge == null) return;
+        if (forge.heatSlider == null) return;
 
         float norm = currentHeat / maxHeat;
-        heatSlider.value = norm;
+        forge.heatSlider.value = norm;
 
         float optNorm = optimalFormingHeat / maxHeat;
         float tol = (optimalFormingHeat * 0.25f) / maxHeat;
         float low = optNorm - tol;
         float high = optNorm + tol;
 
-        if (optimalRangeImage != null)
+        bool leftToRight = forge.heatSlider.direction == Slider.Direction.LeftToRight;
+        bool bottomToTop = forge.heatSlider.direction == Slider.Direction.BottomToTop;
+
+        float sliderHeight = forge.heatSlider.GetComponent<RectTransform>().rect.height;
+
+        if (forge.optimalRangeMarkerLow != null)
         {
-            optimalRangeImage.color = (norm >= low && norm <= high)
-                ? Color.green : Color.Lerp(Color.red, Color.green, 1f - Mathf.Abs(norm - optNorm) / tol);
+            if (leftToRight)
+            {
+                forge.optimalRangeMarkerLow.anchorMin = new Vector2(low, 0f);
+                forge.optimalRangeMarkerLow.anchorMax = new Vector2(low, 1f);
+                forge.optimalRangeMarkerLow.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                forge.optimalRangeMarkerLow.anchorMin = new Vector2(0f, 0f);
+                forge.optimalRangeMarkerLow.anchorMax = new Vector2(1f, 0f);
+                forge.optimalRangeMarkerLow.anchoredPosition = new Vector2(0f, low * sliderHeight);
+            }
         }
 
-        if (optimalRangeMarkerLow != null && heatSlider.direction == Slider.Direction.LeftToRight)
+        if (forge.optimalRangeMarkerHigh != null)
         {
-            optimalRangeMarkerLow.anchorMin = new Vector2(low, 0f);
-            optimalRangeMarkerLow.anchorMax = new Vector2(low, 1f);
-        }
-
-        if (optimalRangeMarkerHigh != null && heatSlider.direction == Slider.Direction.LeftToRight)
-        {
-            optimalRangeMarkerHigh.anchorMin = new Vector2(high, 0f);
-            optimalRangeMarkerHigh.anchorMax = new Vector2(high, 1f);
+            if (leftToRight)
+            {
+                forge.optimalRangeMarkerHigh.anchorMin = new Vector2(high, 0f);
+                forge.optimalRangeMarkerHigh.anchorMax = new Vector2(high, 1f);
+                forge.optimalRangeMarkerHigh.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                forge.optimalRangeMarkerHigh.anchorMin = new Vector2(0f, 0f);
+                forge.optimalRangeMarkerHigh.anchorMax = new Vector2(1f, 0f);
+                forge.optimalRangeMarkerHigh.anchoredPosition = new Vector2(0f, high * sliderHeight);
+            }
         }
     }
 
@@ -252,6 +305,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         UpdateBlobShape();
         RequestSerialization();
+        Debug.Log("SmiteWeapon: AdvanceSmiteIndex: currentSmiteIndex = " + currentSmiteIndex);
     }
 
     private void UpdateBlobShape()
@@ -302,10 +356,11 @@ public class SmiteWeapon : UdonSharpBehaviour
         coolRate = defaultCoolRate;
     }
 
-    void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (!Networking.IsOwner(gameObject)) return;
 
+        Debug.Log("SmiteWeapon: OnTriggerEnter: other = " + other.gameObject.name);
         if (other.gameObject.name == "HeatArea")
         {
             isHeated = true;
@@ -313,10 +368,11 @@ public class SmiteWeapon : UdonSharpBehaviour
         }
     }
 
-    void OnTriggerExit(Collider other)
+    public void OnTriggerExit(Collider other)
     {
         if (!Networking.IsOwner(gameObject)) return;
 
+        Debug.Log("SmiteWeapon: OnTriggerExit: other = " + other.gameObject.name);
         if (other.gameObject.name == "HeatArea")
         {
             isHeated = false;
@@ -328,18 +384,21 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         isHeld = true;
         RequestSerialization();
+        Debug.Log("SmiteWeapon: OnGrabbed: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
 
     public void OnReleased()
     {
         isHeld = false;
         RequestSerialization();
+        Debug.Log("SmiteWeapon: OnReleased: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
 
     public void RecordHit(float accuracy)
     {
         if (!Networking.IsOwner(gameObject)) return;
         if (isCompleted) return;
+        Debug.Log("SmiteWeapon: RecordHit: accuracy = " + accuracy + ", currentHeat = " + currentHeat + ", optimalFormingHeat = " + optimalFormingHeat);
 
         totalAttempts++;
 
@@ -389,6 +448,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         RequestSerialization();
         AwardExperience();
         TryAutoStore();
+        Debug.Log("SmiteWeapon: EvaluateQuality: qualityScore = " + qualityScore + ", hitCount = " + hitCount + ", totalAttempts = " + totalAttempts);
     }
 
     private void AwardExperience()
@@ -398,5 +458,6 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         float currentExp = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.EXP_KEY);
         PlayerData.SetFloat(BlacksmithData.EXP_KEY, currentExp + earned);
+        Debug.Log("SmiteWeapon: AwardExperience: earned = " + earned + ", new total = " + (currentExp + earned));
     }
 }

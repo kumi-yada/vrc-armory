@@ -68,6 +68,11 @@ public class SmitePoint : UdonSharpBehaviour
         }
     }
 
+    public bool CanHit()
+    {
+        return IsActive && Utilities.IsValid(anvil) && !IsFinished;
+    }
+
     public bool CheckHit()
     {
         if (!IsActive || IsFinished)

@@ -24,29 +24,22 @@ public class Tongs : UdonSharpBehaviour
             nearbySmiteWeapon = null;
     }
 
-    public void GrabSmiteWeapon(SmiteWeapon weapon)
-    {
-        if (!Utilities.IsValid(weapon)) return;
-        if (heldSmiteWeapon != null) return;
-
-        nearbySmiteWeapon = weapon;
-        heldSmiteWeapon = weapon;
-        weapon.OnGrabbed();
-    }
-
     public override void OnPickupUseDown()
     {
         if (Utilities.IsValid(heldSmiteWeapon))
         {
+            Debug.Log("Tongs: UseDown on held smite weapon: " + heldSmiteWeapon.recipeName);
             SmitePoint activePoint = heldSmiteWeapon.GetActiveSmitePoint();
-            if (Utilities.IsValid(activePoint) && activePoint.IsActive && !activePoint.IsFinished)
+            if (Utilities.IsValid(activePoint) && activePoint.CanHit())
             {
                 activePoint.CheckHit();
+                Debug.Log("Tongs: Hit active smite point on held smite weapon: " + heldSmiteWeapon.recipeName);
                 return;
             }
 
             heldSmiteWeapon.OnReleased();
             heldSmiteWeapon = null;
+            Debug.Log("Tongs: Released held smite weapon");
             return;
         }
 
@@ -54,6 +47,7 @@ public class Tongs : UdonSharpBehaviour
         {
             heldSmiteWeapon = nearbySmiteWeapon;
             nearbySmiteWeapon.OnGrabbed();
+            Debug.Log("Tongs: Grabbed nearby smite weapon: " + nearbySmiteWeapon.recipeName);
         }
     }
 }

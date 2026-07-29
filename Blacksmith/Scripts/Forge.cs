@@ -10,7 +10,7 @@ using TMPro;
 public class Forge : UdonSharpBehaviour
 {
     [Header("Items")]
-    public GameObject[] spawnItems;
+    [SerializeField] private Transform spawnItemContainer;
     [SerializeField] private Transform itemSpawnPoint;
 
     [Header("UI")]
@@ -22,9 +22,13 @@ public class Forge : UdonSharpBehaviour
     [Header("Heat")]
     [SerializeField] private GameObject heatArea;
     [SerializeField] private ParticleSystem particleField;
+    [SerializeField] public Slider heatSlider;
+    [SerializeField] public Image optimalRangeImage;
+    [SerializeField] public RectTransform optimalRangeMarkerLow;
+    [SerializeField] public RectTransform optimalRangeMarkerHigh;
 
     private int selectedRecipeIndex = -1;
-    private GameObject currentItem;
+    private SmiteWeapon currentItem;
     [UdonSynced] private bool isActive;
 
     void Start()
@@ -74,21 +78,23 @@ public class Forge : UdonSharpBehaviour
         if (!Networking.IsOwner(gameObject)) return;
         if (Utilities.IsValid(currentItem)) return;
 
+        Debug.Log("Forge: SelectRecipe: index = " + index);
         selectedRecipeIndex = index;
         SpawnSmiteWeapon();
         if (currentItem == null) return;
 
         recipeListPage.SetActive(false);
         recipeDetailsPage.SetActive(true);
-        SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
-        if (Utilities.IsValid(recipeNameText) && Utilities.IsValid(weapon))
-            recipeNameText.text = weapon.recipeName;
+        if (Utilities.IsValid(recipeNameText))
+            recipeNameText.text = currentItem.recipeName;
+            Debug.Log("Forge: SelectRecipe: selected recipe = " + currentItem.recipeName);
     }
 
     public void ClearCurrentItem()
     {
         if (!Networking.IsOwner(gameObject)) return;
 
+        Debug.Log("Forge: ClearCurrentItem: clearing current item");
         currentItem = null;
         StopHeat();
 
@@ -98,22 +104,25 @@ public class Forge : UdonSharpBehaviour
 
     public void CancelSelection()
     {
+        Debug.Log("Forge: CancelSelection: clearing current item");
         if (!Networking.IsOwner(gameObject)) return;
 
         if (Utilities.IsValid(currentItem))
-            currentItem.SetActive(false);
+            currentItem.gameObject.SetActive(false);
         ClearCurrentItem();
     }
 
     public void SpawnSmiteWeapon()
     {
-        if (spawnItems == null || selectedRecipeIndex < 0 || selectedRecipeIndex >= spawnItems.Length)
+        if (!Utilities.IsValid(spawnItemContainer) || selectedRecipeIndex < 0 || selectedRecipeIndex >= spawnItemContainer.childCount)
             return;
 
         if (Utilities.IsValid(currentItem))
-            currentItem.SetActive(false);
+            currentItem.gameObject.SetActive(false);
 
-        currentItem = spawnItems[selectedRecipeIndex];
+        Transform child = spawnItemContainer.GetChild(selectedRecipeIndex);
+        GameObject go = child.gameObject;
+        currentItem = go.GetComponent<SmiteWeapon>();
         if (!Utilities.IsValid(currentItem))
         {
             Debug.Log("Forge: SpawnSmiteWeapon: currentItem is null for index " + selectedRecipeIndex);
@@ -121,16 +130,10 @@ public class Forge : UdonSharpBehaviour
         }
 
         InitSelectedWeapon();
-
-        SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
-        if (Utilities.IsValid(weapon))
-        {
-            weapon.spawnItemIndex = selectedRecipeIndex;
-            weapon.forge = this;
-        }
+        currentItem.spawnItemIndex = selectedRecipeIndex;
+        currentItem.forge = this;
 
         StartHeat();
-
         RequestSerialization();
     }
 
@@ -140,9 +143,10 @@ public class Forge : UdonSharpBehaviour
             ? itemSpawnPoint.position
             : transform.position + Vector3.up * 0.5f;
 
+        currentItem.ResetState();
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
-        currentItem.SetActive(true);
+        currentItem.gameObject.SetActive(true);
     }
 
     private void StartHeat()
@@ -163,6 +167,23 @@ public class Forge : UdonSharpBehaviour
         if (Utilities.IsValid(particleField))
             particleField.Stop();
         RequestSerialization();
+    }
+
+    public int ItemCount
+    {
+        get
+        {
+            if (!Utilities.IsValid(spawnItemContainer)) return 0;
+            return spawnItemContainer.childCount;
+        }
+    }
+
+    public SmiteWeapon GetItemByIndex(int index)
+    {
+        if (!Utilities.IsValid(spawnItemContainer) || index < 0 || index >= spawnItemContainer.childCount)
+            return null;
+        Transform child = spawnItemContainer.GetChild(index);
+        return child.GetComponent<SmiteWeapon>();
     }
 
     // Recipe selection shortcuts
