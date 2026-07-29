@@ -1,5 +1,6 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
 
@@ -19,20 +20,16 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] private float maxHeat = 1000f;
     public float defaultCoolRate;
 
-    [Header("Materials")]
-    [SerializeField] private Renderer targetRenderer;
-    [SerializeField] private Material unfinishedMaterial;
-    private Material[] originalSharedMaterials;
 
     [Header("Smiting")]
     [SerializeField] private SmitePoint[] smitePoints;
     [UdonSynced] private int currentSmiteIndex;
 
-    [Header("Blend Shape")]
-    [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
-    [SerializeField] private int blobShapeIndex;
-
-    [Header("Heat Glow")]
+    [Header("Heat")]
+    [SerializeField] private Slider heatSlider;
+    [SerializeField] private Image optimalRangeImage;
+    [SerializeField] private RectTransform optimalRangeMarkerLow;
+    [SerializeField] private RectTransform optimalRangeMarkerHigh;
     [SerializeField] private float glowIntensity = 2f;
     [SerializeField] private Color[] heatColorRamp = new Color[]
     {
@@ -42,6 +39,13 @@ public class SmiteWeapon : UdonSharpBehaviour
         new Color(1f, 0.9f, 0f),
         new Color(1f, 1f, 1f),
     };
+
+    [Header("Visuals")]
+    [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
+    [SerializeField] private int blobShapeIndex;
+    [SerializeField] private Renderer targetRenderer;
+    [SerializeField] private Material unfinishedMaterial;
+    private Material[] originalSharedMaterials;
     private MaterialPropertyBlock propBlock;
     private Color currentEmission;
     private bool glowDirty;
@@ -129,6 +133,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         ProcessHeatAndCoolOff();
         UpdateMaterialForCompleted();
         UpdateHeatGlow();
+        UpdateHeatSlider();
     }
 
     private void UpdateHeldPosition()
@@ -179,6 +184,37 @@ public class SmiteWeapon : UdonSharpBehaviour
         propBlock.SetColor("_EmissionColor", targetColor);
         targetRenderer.SetPropertyBlock(propBlock);
         glowDirty = false;
+    }
+
+    private void UpdateHeatSlider()
+    {
+        if (heatSlider == null) return;
+
+        float norm = currentHeat / maxHeat;
+        heatSlider.value = norm;
+
+        float optNorm = optimalFormingHeat / maxHeat;
+        float tol = (optimalFormingHeat * 0.25f) / maxHeat;
+        float low = optNorm - tol;
+        float high = optNorm + tol;
+
+        if (optimalRangeImage != null)
+        {
+            optimalRangeImage.color = (norm >= low && norm <= high)
+                ? Color.green : Color.Lerp(Color.red, Color.green, 1f - Mathf.Abs(norm - optNorm) / tol);
+        }
+
+        if (optimalRangeMarkerLow != null && heatSlider.direction == Slider.Direction.LeftToRight)
+        {
+            optimalRangeMarkerLow.anchorMin = new Vector2(low, 0f);
+            optimalRangeMarkerLow.anchorMax = new Vector2(low, 1f);
+        }
+
+        if (optimalRangeMarkerHigh != null && heatSlider.direction == Slider.Direction.LeftToRight)
+        {
+            optimalRangeMarkerHigh.anchorMin = new Vector2(high, 0f);
+            optimalRangeMarkerHigh.anchorMax = new Vector2(high, 1f);
+        }
     }
 
     public void AdvanceSmiteIndex()
