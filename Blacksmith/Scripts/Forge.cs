@@ -17,7 +17,6 @@ public class Forge : UdonSharpBehaviour
     [SerializeField] private GameObject recipeListPage;
     [SerializeField] private GameObject recipeDetailsPage;
     [SerializeField] private TextMeshProUGUI recipeNameText;
-    [SerializeField] private float hideUIDistance = 3f;
 
     [Header("Heat")]
     [SerializeField] private GameObject heatArea;
@@ -41,17 +40,21 @@ public class Forge : UdonSharpBehaviour
             particleField.Stop();
     }
 
-    void Update()
+    public override void OnPlayerTriggerEnter(VRCPlayerApi player)
     {
+        if (!Utilities.IsValid(player)) return;
+        if (!player.isLocal) return;
         if (!Utilities.IsValid(uiCanvas)) return;
-        if (!uiCanvas.enabled) return;
 
-        VRCPlayerApi localPlayer = Networking.LocalPlayer;
-        if (!Utilities.IsValid(localPlayer)) return;
+        uiCanvas.enabled = true;
+    }
 
-        if (Vector3.Distance(owner.GetPosition(), transform.position) <= hideUIDistance) return;
-
+    public override void OnPlayerTriggerExit(VRCPlayerApi player)
+    {
+        if (!Utilities.IsValid(player)) return;
+        if (!player.isLocal) return;
         if (!Utilities.IsValid(uiCanvas)) return;
+
         uiCanvas.enabled = false;
     }
 
@@ -79,14 +82,6 @@ public class Forge : UdonSharpBehaviour
         SmiteWeapon weapon = currentItem.GetComponent<SmiteWeapon>();
         if (Utilities.IsValid(recipeNameText) && Utilities.IsValid(weapon))
             recipeNameText.text = weapon.recipeName;
-    }
-
-    public override void Interact()
-    {
-        if (!Networking.IsOwner(gameObject)) return;
-
-        if (Utilities.IsValid(uiCanvas))
-            uiCanvas.enabled = !uiCanvas.enabled;
     }
 
     public void CancelSelection()
