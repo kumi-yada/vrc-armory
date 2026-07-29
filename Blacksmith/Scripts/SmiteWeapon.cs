@@ -6,11 +6,11 @@ using VRC.Udon;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmiteWeapon : UdonSharpBehaviour
 {
-    [System.NonSerialized] public string recipeName;
     [System.NonSerialized] public float currentHeat;
     [System.NonSerialized] public bool isHeated;
     [UdonSynced] public bool isHeld;
 
+    [SerializeField] public string recipeName;
     [SerializeField] private float heatRate = 100f;
     [SerializeField] private float coolRate = 3f;
     [SerializeField] private float optimalFormingHeat = 750f;
