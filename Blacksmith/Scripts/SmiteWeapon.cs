@@ -1,6 +1,7 @@
 ﻿using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
+using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 using VRC.Udon;
 
@@ -56,6 +57,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public Forge forge;
     [UdonSynced] public float qualityScore;
     [SerializeField] private Storage storage;
+    [SerializeField] private float experiencePerCompletion = 100f;
 
     public int hitCount;
     private float runningMean;
@@ -373,6 +375,7 @@ public class SmiteWeapon : UdonSharpBehaviour
             qualityScore = 0f;
             isCompleted = true;
             RequestSerialization();
+            AwardExperience();
             TryAutoStore();
             return;
         }
@@ -384,6 +387,16 @@ public class SmiteWeapon : UdonSharpBehaviour
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
         isCompleted = true;
         RequestSerialization();
+        AwardExperience();
         TryAutoStore();
+    }
+
+    private void AwardExperience()
+    {
+        float earned = experiencePerCompletion * qualityScore;
+        if (earned <= 0f) return;
+
+        float currentExp = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.EXP_KEY);
+        PlayerData.SetFloat(BlacksmithData.EXP_KEY, currentExp + earned);
     }
 }
