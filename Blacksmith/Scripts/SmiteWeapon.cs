@@ -52,9 +52,11 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     [UdonSynced] [System.NonSerialized] public bool isCompleted;
     [UdonSynced] public float qualityScore;
-    [System.NonSerialized] public float[] hitScores;
 
     public int hitCount;
+    private float runningMean;
+    private float runningM2;
+
     public int totalAttempts;
     private bool wasCompleted;
 
@@ -70,7 +72,6 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         isInEditor = Networking.LocalPlayer == null;
         defaultCoolRate = coolRate;
-        hitScores = new float[5];
         hitCount = 0;
         totalAttempts = 0;
         qualityScore = 0f;
@@ -327,11 +328,11 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         float hitScore = accuracy * 0.6f + heatFactor * 0.4f;
 
-        if (hitCount < hitScores.Length)
-        {
-            hitScores[hitCount] = hitScore;
-            hitCount++;
-        }
+        hitCount++;
+        float delta = hitScore - runningMean;
+        runningMean += delta / hitCount;
+        float delta2 = hitScore - runningMean;
+        runningM2 += delta * delta2;
     }
 
     public void EvaluateQuality()
@@ -345,19 +346,8 @@ public class SmiteWeapon : UdonSharpBehaviour
             return;
         }
 
-        float total = 0f;
-        for (int i = 0; i < hitCount; i++)
-            total += hitScores[i];
-
-        float avgScore = total / hitCount;
-
-        float variance = 0f;
-        for (int i = 0; i < hitCount; i++)
-        {
-            float diff = hitScores[i] - avgScore;
-            variance += diff * diff;
-        }
-        variance /= hitCount;
+        float avgScore = runningMean;
+        float variance = hitCount > 1 ? runningM2 / hitCount : 0f;
         float consistencyFactor = 1f - Mathf.Clamp01(variance * 4f);
 
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
