@@ -1,42 +1,18 @@
 ﻿using UdonSharp;
 using UnityEngine;
-using TMPro;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
-using VRC.Udon;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class Leaderboard : UdonSharpBehaviour
 {
-    [Header("Player Info")]
-    [SerializeField] private TextMeshProUGUI localPlayerEntry;
-    [SerializeField] private string localPlayerFormat = "You: Lv.{0} ({1} XP)";
-
-    [Header("Ranks")]
-    [SerializeField] private TextMeshProUGUI[] rankNameTexts;
-    [SerializeField] private TextMeshProUGUI[] rankLevelTexts;
-    [SerializeField] private GameObject[] rankRows;
-
-    [Header("Settings")]
-    [SerializeField] private float refreshInterval = 10f;
-    [SerializeField] private int maxEntries = 8;
-
-    private float timer;
+    [Header("Rows")]
+    [SerializeField] private LeaderRow[] rows;
 
     void Start()
     {
         if (Networking.LocalPlayer == null) return;
         Refresh();
-    }
-
-    void Update()
-    {
-        timer += Time.deltaTime;
-        if (timer >= refreshInterval)
-        {
-            timer = 0f;
-            Refresh();
-        }
     }
 
     public override void OnPlayerJoined(VRCPlayerApi player)
@@ -49,6 +25,11 @@ public class Leaderboard : UdonSharpBehaviour
         Refresh();
     }
 
+    public override void OnPlayerDataUpdated(VRCPlayerApi player, PlayerData.Info[] infos)
+    {
+        Refresh();
+    }
+
     public void Refresh()
     {
         VRCPlayerApi[] players = VRCPlayerApi.GetPlayers();
@@ -57,10 +38,6 @@ public class Leaderboard : UdonSharpBehaviour
             ClearEntries();
             return;
         }
-
-        int count = players.Length;
-        if (count > maxEntries)
-            count = maxEntries;
 
         string[] names = new string[players.Length];
         int[] levels = new int[players.Length];
@@ -81,59 +58,21 @@ public class Leaderboard : UdonSharpBehaviour
 
         SortEntries(names, levels, exps);
 
-        if (localPlayerEntry != null)
-        {
-            VRCPlayerApi local = Networking.LocalPlayer;
-            float localExp = PlayerData.GetFloat(local, BlacksmithData.EXP_KEY);
-            int localLevel = BlacksmithData.GetLevel(localExp);
-            localPlayerEntry.text = string.Format(localPlayerFormat, localLevel, Mathf.FloorToInt(localExp));
-        }
-
-        int displayCount = count;
-        if (displayCount > rankNameTexts.Length)
-            displayCount = rankNameTexts.Length;
-        if (displayCount > rankLevelTexts.Length)
-            displayCount = rankLevelTexts.Length;
+        int displayCount = players.Length;
+        if (displayCount > rows.Length)
+            displayCount = rows.Length;
 
         for (int i = 0; i < displayCount; i++)
-        {
-            if (rankRows != null && i < rankRows.Length && rankRows[i] != null)
-                rankRows[i].SetActive(true);
+            rows[i].SetEntry(names[i], levels[i], exps[i]);
 
-            if (rankNameTexts[i] != null)
-                rankNameTexts[i].text = names[i];
-            if (rankLevelTexts[i] != null)
-                rankLevelTexts[i].text = string.Format("Lv.{0}  ({1} XP)", levels[i], Mathf.FloorToInt(exps[i]));
-        }
-
-        for (int i = displayCount; i < (rankRows != null ? rankRows.Length : 0); i++)
-        {
-            if (rankRows[i] != null)
-                rankRows[i].SetActive(false);
-        }
+        for (int i = displayCount; i < rows.Length; i++)
+            rows[i].Clear();
     }
 
     private void ClearEntries()
     {
-        if (localPlayerEntry != null)
-            localPlayerEntry.text = "No players";
-
-        for (int i = 0; i < rankNameTexts.Length; i++)
-        {
-            if (rankNameTexts[i] != null)
-                rankNameTexts[i].text = "";
-            if (rankLevelTexts[i] != null)
-                rankLevelTexts[i].text = "";
-        }
-
-        if (rankRows != null)
-        {
-            for (int i = 0; i < rankRows.Length; i++)
-            {
-                if (rankRows[i] != null)
-                    rankRows[i].SetActive(false);
-            }
-        }
+        for (int i = 0; i < rows.Length; i++)
+            rows[i].Clear();
     }
 
     private void SortEntries(string[] names, int[] levels, float[] exps)
