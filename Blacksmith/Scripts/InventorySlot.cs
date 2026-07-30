@@ -53,7 +53,17 @@ public class InventorySlot : UdonSharpBehaviour
         RequestSerialization();
     }
 
+    private void Start()
+    {
+        RefreshUI();
+    }
+
     public override void OnDeserialization()
+    {
+        RefreshUI();
+    }
+
+    private void RefreshUI()
     {
         if (itemIndex == -1)
         {
