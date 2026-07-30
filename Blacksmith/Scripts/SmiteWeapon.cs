@@ -47,6 +47,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] private bool glowDirty;
 
     [UdonSynced] [System.NonSerialized] public bool isCompleted;
+    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
     [System.NonSerialized] public bool isStored;
     [System.NonSerialized] public Forge forge;
     [UdonSynced] [System.NonSerialized] public float qualityScore;
@@ -76,6 +77,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         isCompleted = false;
         wasCompleted = false;
         qualityScore = 0f;
+        finishTimeMs = 0;
         hitCount = 0;
         totalAttempts = 0;
         runningMean = 0f;
@@ -431,6 +433,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         {
             qualityScore = 0f;
             isCompleted = true;
+            finishTimeMs = Networking.GetServerTimeInMilliseconds();
             RequestSerialization();
             AwardExperience();
             TryAutoStore();
@@ -443,6 +446,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
         isCompleted = true;
+        finishTimeMs = Networking.GetServerTimeInMilliseconds();
         RequestSerialization();
         AwardExperience();
         TryAutoStore();
