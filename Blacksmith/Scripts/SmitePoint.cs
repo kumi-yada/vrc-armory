@@ -7,7 +7,7 @@ using VRC.SDK3.UdonNetworkCalling;
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmitePoint : UdonSharpBehaviour
 {
-    [SerializeField] private float smiteSpeed = 30f;
+    [SerializeField] private float smiteSpeed = 100f;
     [SerializeField] private int maxSmiteHits = 5;
     [SerializeField] private float hitRange = 20f;
     [System.NonSerialized] public float hitAreaFrom;

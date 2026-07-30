@@ -13,6 +13,7 @@ public class Tongs : UdonSharpBehaviour
     private void OnTriggerEnter(Collider other)
     {
         SmiteWeapon weapon = other.GetComponentInParent<SmiteWeapon>();
+        Debug.Log("Tongs: OnTriggerEnter with " + (weapon != null ? weapon.recipeName : "null"));
         if (Utilities.IsValid(weapon))
             nearbySmiteWeapon = weapon;
     }

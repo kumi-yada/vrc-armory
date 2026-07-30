@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Knife
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b0dc3926c1f65f06aa483cc1a349d09b, type: 2}
-  m_sharedMaterial: {fileID: -2876128588353695948, guid: b0dc3926c1f65f06aa483cc1a349d09b,
+  m_fontAsset: {fileID: 11400000, guid: 373b8b464e12b0e08956936e6e7d0c62, type: 2}
+  m_sharedMaterial: {fileID: -5282766240395598076, guid: 373b8b464e12b0e08956936e6e7d0c62,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
