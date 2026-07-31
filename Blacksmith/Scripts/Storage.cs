@@ -7,7 +7,7 @@ using VRC.Udon;
 public class Storage : UdonSharpBehaviour
 {
     [SerializeField] private Forge forge;
-    [SerializeField] private InventorySlot[] slots;
+    [SerializeField] public InventorySlot[] slots;
 
     public void AutoStoreItem(SmiteWeapon weapon)
     {
@@ -23,33 +23,6 @@ public class Storage : UdonSharpBehaviour
             if (slots[i].itemIndex != -1) continue;
             slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName, weapon.finishTimeMs);
             weapon.isStored = true;
-            return;
-        }
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (!Networking.IsOwner(gameObject)) return;
-
-        SmiteWeapon weapon = other.GetComponent<SmiteWeapon>();
-        if (!Utilities.IsValid(weapon)) return;
-        if (!weapon.isCompleted) return;
-        if (!Networking.IsOwner(weapon.gameObject)) return;
-
-        if (weapon.isStored)
-        {
-            weapon.gameObject.SetActive(false);
-            return;
-        }
-
-        int idx = weapon.spawnItemIndex;
-        if (idx < 0 || idx >= forge.ItemCount) return;
-
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if (slots[i].itemIndex != -1) continue;
-            slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName, weapon.finishTimeMs);
-            weapon.gameObject.SetActive(false);
             return;
         }
     }

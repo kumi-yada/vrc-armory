@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 2166355098487067826, guid: 93818687365c137779c32d2c851e9c5a,
         type: 3}
       propertyPath: m_Name
-      value: Knife Variant
+      value: RecipeButton
       objectReference: {fileID: 0}
     - target: {fileID: 3869717947498319447, guid: 93818687365c137779c32d2c851e9c5a,
         type: 3}
@@ -116,7 +116,32 @@ PrefabInstance:
     - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 35199476943591110}
+    - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SendCustomEvent
+      objectReference: {fileID: 0}
+    - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 6420226515649747633, guid: 93818687365c137779c32d2c851e9c5a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

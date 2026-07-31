@@ -14,7 +14,10 @@ public class InventorySlot : UdonSharpBehaviour
     [SerializeField] private TextMeshProUGUI recipeNameText;
     [SerializeField] private TextMeshProUGUI qualityNameText;
     [SerializeField] private TextMeshProUGUI finishDateText;
+    [SerializeField] private TextMeshProUGUI sellPriceText;
     [SerializeField] private Forge forge;
+    [SerializeField] private Shop shop;
+    [SerializeField] private int slotIndex;
 
     public void SetItem(int index, float q, string recipeName, int timeMs)
     {
@@ -49,8 +52,16 @@ public class InventorySlot : UdonSharpBehaviour
             qualityNameText.text = "";
         if (finishDateText != null)
             finishDateText.text = "";
+        if (sellPriceText != null)
+            sellPriceText.text = "";
 
         RequestSerialization();
+    }
+
+    public void OnSellClick()
+    {
+        if (!Utilities.IsValid(shop)) return;
+        shop.SellItem(slotIndex);
     }
 
     private void Start()
@@ -70,23 +81,26 @@ public class InventorySlot : UdonSharpBehaviour
             if (recipeNameText != null) recipeNameText.text = "";
             if (qualityNameText != null) qualityNameText.text = "";
             if (finishDateText != null) finishDateText.text = "";
+            if (sellPriceText != null) sellPriceText.text = "";
             return;
         }
 
+        SmiteWeapon weapon = null;
+        if (forge != null)
+            weapon = forge.GetItemByIndex(itemIndex);
+
         if (recipeNameText != null)
-        {
-            string rn = "";
-            if (forge != null)
-            {
-                var weapon = forge.GetItemByIndex(itemIndex);
-                if (weapon != null)
-                    rn = weapon.recipeName;
-            }
-            recipeNameText.text = rn;
-        }
+            recipeNameText.text = weapon != null ? weapon.recipeName : "";
 
         if (qualityNameText != null)
             qualityNameText.text = GetQualityLabel(quality);
+
+        if (sellPriceText != null)
+        {
+            float price = weapon != null ? weapon.baseSellPrice * (1f + quality) : 0f;
+            sellPriceText.text = price > 0f ? Mathf.RoundToInt(price) + "g" : "";
+        }
+
         UpdateFinishDateText();
     }
 

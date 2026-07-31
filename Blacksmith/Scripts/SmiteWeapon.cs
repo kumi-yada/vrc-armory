@@ -53,6 +53,8 @@ public class SmiteWeapon : UdonSharpBehaviour
     [UdonSynced] [System.NonSerialized] public float qualityScore;
     [SerializeField] private Storage storage;
     [SerializeField] private float experiencePerCompletion = 10f;
+    [SerializeField] public float baseSellPrice = 10f;
+    [System.NonSerialized] public float sellPrice;
 
     [System.NonSerialized] public int hitCount;
     [System.NonSerialized] private float runningMean;
@@ -60,6 +62,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     [System.NonSerialized] public int totalAttempts;
     [System.NonSerialized] private bool wasCompleted;
+    [System.NonSerialized] private bool completionInvalidated;
 
     [System.NonSerialized] bool isInEditor;
 
@@ -77,6 +80,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         isCompleted = false;
         wasCompleted = false;
         qualityScore = 0f;
+        sellPrice = 0f;
         finishTimeMs = 0;
         hitCount = 0;
         totalAttempts = 0;
@@ -86,6 +90,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         currentSmiteIndex = 0;
         currentEmission = Color.black;
         glowDirty = true;
+        completionInvalidated = false;
 
         if (blendShapeRenderer != null)
             blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, 100f);
@@ -206,10 +211,21 @@ public class SmiteWeapon : UdonSharpBehaviour
             currentHeat = Mathf.Max(0f, currentHeat - coolRate * Time.deltaTime);
         }
 
-        if (!isHeated && currentHeat <= 0f && hitCount > 0 && !isCompleted && coolRate > defaultCoolRate)
+        bool allPointsDone = smitePoints != null && smitePoints.Length > 0 && currentSmiteIndex >= smitePoints.Length;
+
+        if (!isCompleted && !completionInvalidated && allPointsDone && !isHeated && currentHeat <= 0f)
         {
             EvaluateQuality();
-            ResetCoolRate();
+        }
+
+        if (isCompleted && currentHeat > 0f)
+        {
+            isCompleted = false;
+            wasCompleted = false;
+            completionInvalidated = true;
+            if (targetRenderer != null && unfinishedMaterial != null)
+                targetRenderer.sharedMaterial = unfinishedMaterial;
+            RequestSerialization();
         }
     }
 
@@ -432,6 +448,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (isCompleted || hitCount == 0)
         {
             qualityScore = 0f;
+            sellPrice = baseSellPrice;
             isCompleted = true;
             finishTimeMs = Networking.GetServerTimeInMilliseconds();
             RequestSerialization();
@@ -445,6 +462,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         float consistencyFactor = 1f - Mathf.Clamp01(variance * 4f);
 
         qualityScore = avgScore * 0.7f + consistencyFactor * 0.3f;
+        sellPrice = baseSellPrice * (1f + qualityScore);
         isCompleted = true;
         finishTimeMs = Networking.GetServerTimeInMilliseconds();
         RequestSerialization();
