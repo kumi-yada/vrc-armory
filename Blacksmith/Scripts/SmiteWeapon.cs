@@ -40,14 +40,11 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
     [SerializeField] private int blobShapeIndex;
     [SerializeField] private Renderer targetRenderer;
-    [SerializeField] private Material unfinishedMaterial;
-    [System.NonSerialized] private Material[] originalSharedMaterials;
     [System.NonSerialized] private MaterialPropertyBlock propBlock;
     [System.NonSerialized] private Color currentEmission;
     [System.NonSerialized] private bool glowDirty;
 
-    [UdonSynced] [System.NonSerialized] public bool isCompleted;
-    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
+    [UdonSynced] [System.NonSerialized] public bool isCompleted;    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
     [System.NonSerialized] public bool isStored;
     [System.NonSerialized] public Forge forge;
     [UdonSynced] [System.NonSerialized] public float qualityScore;
@@ -61,7 +58,6 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] private float runningM2;
 
     [System.NonSerialized] public int totalAttempts;
-    [System.NonSerialized] private bool wasCompleted;
     [System.NonSerialized] private bool completionInvalidated;
 
     [System.NonSerialized] bool isInEditor;
@@ -78,7 +74,6 @@ public class SmiteWeapon : UdonSharpBehaviour
         isHeated = false;
         isHeld = false;
         isCompleted = false;
-        wasCompleted = false;
         qualityScore = 0f;
         sellPrice = 0f;
         finishTimeMs = 0;
@@ -94,12 +89,6 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         if (blendShapeRenderer != null)
             blendShapeRenderer.SetBlendShapeWeight(blobShapeIndex, 100f);
-
-        if (targetRenderer != null)
-        {
-            if (unfinishedMaterial != null)
-                targetRenderer.sharedMaterial = unfinishedMaterial;
-        }
 
         syncedPosition = transform.position;
         syncedRotation = transform.rotation;
@@ -123,13 +112,6 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         if (targetRenderer == null)
             targetRenderer = GetComponent<Renderer>();
-
-        if (targetRenderer != null)
-        {
-            originalSharedMaterials = targetRenderer.sharedMaterials;
-            if (unfinishedMaterial != null)
-                targetRenderer.sharedMaterial = unfinishedMaterial;
-        }
 
         propBlock = new MaterialPropertyBlock();
         currentEmission = Color.black;
@@ -160,18 +142,6 @@ public class SmiteWeapon : UdonSharpBehaviour
             UpdateHeatGlow();
             UpdateBlobShape();
         }
-
-        UpdateMaterialForCompleted();
-    }
-
-    private void UpdateMaterialForCompleted()
-    {
-        if (isCompleted && !wasCompleted && targetRenderer != null)
-        {
-            wasCompleted = true;
-            if (originalSharedMaterials != null)
-                targetRenderer.sharedMaterials = originalSharedMaterials;
-        }
     }
 
     void Update()
@@ -180,7 +150,6 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         UpdateHeldPosition();
         ProcessHeatAndCoolOff();
-        UpdateMaterialForCompleted();
         UpdateHeatGlow();
         UpdateHeatSlider();
     }
@@ -221,10 +190,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (isCompleted && currentHeat > 0f)
         {
             isCompleted = false;
-            wasCompleted = false;
             completionInvalidated = true;
-            if (targetRenderer != null && unfinishedMaterial != null)
-                targetRenderer.sharedMaterial = unfinishedMaterial;
             RequestSerialization();
         }
     }
