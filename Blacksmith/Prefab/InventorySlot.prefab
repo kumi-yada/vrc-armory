@@ -171,10 +171,14 @@ MonoBehaviour:
   itemIndex: -1
   quality: 0
   finishTimeMs: 0
+  isShown: 0
   recipeNameText: {fileID: 6060529068985890962}
   qualityNameText: {fileID: 6944338894232186642}
   finishDateText: {fileID: 2164362942140373819}
+  sellPriceText: {fileID: 0}
   forge: {fileID: 0}
+  storage: {fileID: 0}
+  slotIndex: 0
 --- !u!114 &2561576747204003783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,7 +248,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6060529068985890962}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2561576747204003783}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: SendCustomEvent
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: OnClick
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &8755460869784783212
 CanvasRenderer:
   m_ObjectHideFlags: 0

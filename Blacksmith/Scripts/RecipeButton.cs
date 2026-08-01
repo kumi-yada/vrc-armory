@@ -34,7 +34,6 @@ public class RecipeButton : UdonSharpBehaviour
                     break;
                 }
             }
-            Debug.Log("RecipeButton: found recipe '" + (recipe != null ? recipe.recipeName : "null") + "' at index " + recipeIndex);
         }
 
         UpdateButtonState();

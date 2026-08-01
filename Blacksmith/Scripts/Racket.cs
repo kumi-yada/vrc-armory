@@ -6,7 +6,6 @@ using VRC.Udon;
 
 public class Racket : UdonSharpBehaviour
 {
-    [SerializeField] private Forge forge;
     private Storage storage;
 
     private void FindStorage()
@@ -31,21 +30,6 @@ public class Racket : UdonSharpBehaviour
         if (!weapon.isCompleted) return;
         if (!Networking.IsOwner(weapon.gameObject)) return;
 
-        if (weapon.isStored)
-        {
-            weapon.gameObject.SetActive(false);
-            return;
-        }
-
-        int idx = weapon.spawnItemIndex;
-        if (idx < 0 || idx >= forge.ItemCount) return;
-
-        for (int i = 0; i < storage.slots.Length; i++)
-        {
-            if (storage.slots[i].itemIndex != -1) continue;
-            storage.slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName, weapon.finishTimeMs);
-            weapon.gameObject.SetActive(false);
-            return;
-        }
+        storage.StoreItem(weapon);
     }
 }

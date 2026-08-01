@@ -45,7 +45,6 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] private bool glowDirty;
 
     [UdonSynced] [System.NonSerialized] public bool isCompleted;    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
-    [System.NonSerialized] public bool isStored;
     [System.NonSerialized] public Forge forge;
     [UdonSynced] [System.NonSerialized] public float qualityScore;
     [System.NonSerialized] private Storage storage;

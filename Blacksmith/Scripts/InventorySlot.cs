@@ -1,5 +1,6 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
@@ -10,13 +11,14 @@ public class InventorySlot : UdonSharpBehaviour
     [UdonSynced] public int itemIndex = -1;
     [UdonSynced] public float quality;
     [UdonSynced] public int finishTimeMs;
+    [UdonSynced] public bool isShown;
 
     [SerializeField] private TextMeshProUGUI recipeNameText;
     [SerializeField] private TextMeshProUGUI qualityNameText;
     [SerializeField] private TextMeshProUGUI finishDateText;
     [SerializeField] private TextMeshProUGUI sellPriceText;
     [SerializeField] private Forge forge;
-    [SerializeField] private Shop shop;
+    [SerializeField] private Storage storage;
     [SerializeField] private int slotIndex;
 
     public void SetItem(int index, float q, string recipeName, int timeMs)
@@ -45,6 +47,7 @@ public class InventorySlot : UdonSharpBehaviour
         itemIndex = -1;
         quality = 0f;
         finishTimeMs = 0;
+        isShown = false;
 
         if (recipeNameText != null)
             recipeNameText.text = "";
@@ -58,10 +61,77 @@ public class InventorySlot : UdonSharpBehaviour
         RequestSerialization();
     }
 
-    public void OnSellClick()
+    public void OnClick()
     {
-        if (!Utilities.IsValid(shop)) return;
-        shop.SellItem(slotIndex);
+        if (itemIndex == -1) return;
+        if (storage != null && storage.currentMode == Storage.MODE_SELL)
+            SellItem();
+        else
+            ToggleStash();
+    }
+
+    public void ToggleStash()
+    {
+        if (itemIndex == -1) return;
+        isShown = !isShown;
+        if (isShown)
+            DisplayWeapon();
+        else
+            StashWeapon();
+        RequestSerialization();
+    }
+
+    private void StashWeapon()
+    {
+        Debug.Log("InventorySlot: StashWeapon: slot=" + slotIndex);
+        if (forge == null) return;
+        SmiteWeapon weapon = forge.GetItemByIndex(itemIndex);
+        if (!Utilities.IsValid(weapon)) return;
+        if (weapon.gameObject.activeSelf)
+            weapon.gameObject.SetActive(false);
+    }
+
+    public void Stash()
+    {
+        if (!isShown) return;
+        isShown = false;
+        StashWeapon();
+        RequestSerialization();
+    }
+
+    private void DisplayWeapon()
+    {
+        Debug.Log("InventorySlot: DisplayWeapon: slot=" + slotIndex);
+        if (forge == null) return;
+        SmiteWeapon weapon = forge.GetItemByIndex(itemIndex);
+        if (!Utilities.IsValid(weapon)) return;
+
+        if (storage != null)
+            storage.StashOtherSlots(this);
+
+        VRCPlayerApi localPlayer = Networking.LocalPlayer;
+        if (!Utilities.IsValid(localPlayer)) return;
+
+        Vector3 forward = localPlayer.GetRotation() * Vector3.forward;
+        weapon.transform.position = localPlayer.GetPosition() + forward * 1.5f + Vector3.up * 0.5f;
+        weapon.transform.rotation = Quaternion.identity;
+        weapon.gameObject.SetActive(true);
+    }
+
+    public void SellItem()
+    {
+        if (itemIndex == -1) return;
+
+        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
+        if (!Utilities.IsValid(weapon)) return;
+
+        float price = weapon.baseSellPrice * (1f + quality);
+
+        float currentGold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        PlayerData.SetFloat(BlacksmithData.GOLD_KEY, currentGold + price);
+        Debug.Log("InventorySlot: SellItem: slot=" + slotIndex + " item=" + weapon.recipeName + " price=" + price + " newGold=" + (currentGold + price));
+
+        Clear();
     }
 
     private void Start()
@@ -88,6 +158,9 @@ public class InventorySlot : UdonSharpBehaviour
         SmiteWeapon weapon = null;
         if (forge != null)
             weapon = forge.GetItemByIndex(itemIndex);
+
+        if (Utilities.IsValid(weapon))
+            weapon.gameObject.SetActive(isShown);
 
         if (recipeNameText != null)
             recipeNameText.text = weapon != null ? weapon.recipeName : "";
