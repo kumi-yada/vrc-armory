@@ -78,6 +78,13 @@ public class SmitePoint : UdonSharpBehaviour
         if (!IsActive || IsFinished)
             return false;
 
+        if (Utilities.IsValid(weapon) && !weapon.IsHeatOptimal())
+        {
+            if (Utilities.IsValid(anvil))
+                anvil.OnSmiteResult(false);
+            return false;
+        }
+
         bool hit = SmiteValue >= hitAreaFrom && SmiteValue <= hitAreaTo;
 
         if (hit)

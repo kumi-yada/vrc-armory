@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
+using TMPro;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class Anvil : UdonSharpBehaviour
@@ -14,6 +15,7 @@ public class Anvil : UdonSharpBehaviour
     [SerializeField] private RectTransform hitZoneCenterMarker;
     [SerializeField] private Image sliderFillImage;
     [SerializeField] private RectTransform sliderValueMarker;
+    [SerializeField] private TextMeshProUGUI statusText;
 
     [System.NonSerialized] public SmitePoint activeSmitePoint;
 
@@ -27,6 +29,8 @@ public class Anvil : UdonSharpBehaviour
             uiCanvas.enabled = false;
         if (Utilities.IsValid(sliderFillImage))
             originalFillColor = sliderFillImage.color;
+        if (Utilities.IsValid(statusText))
+            statusText.gameObject.SetActive(false);
     }
 
     public void SetActiveSmitePoint(SmitePoint point)
@@ -44,6 +48,8 @@ public class Anvil : UdonSharpBehaviour
     {
         if (Utilities.IsValid(uiCanvas))
             uiCanvas.enabled = false;
+        if (Utilities.IsValid(statusText))
+            statusText.gameObject.SetActive(false);
     }
 
     public void OnSmiteResult(bool hit)
@@ -65,6 +71,25 @@ public class Anvil : UdonSharpBehaviour
         }
 
         if (!Utilities.IsValid(activeSmitePoint)) return;
+
+        if (Utilities.IsValid(statusText))
+        {
+            bool weaponValid = Utilities.IsValid(activeSmitePoint.weapon);
+            bool isOptimal = weaponValid && activeSmitePoint.weapon.IsHeatOptimal();
+            if (isOptimal)
+            {
+                statusText.gameObject.SetActive(false);
+            }
+            else
+            {
+                statusText.gameObject.SetActive(true);
+                if (weaponValid && activeSmitePoint.weapon.IsHeatTooHot())
+                    statusText.text = "Too Hot";
+                else
+                    statusText.text = "Too Cold";
+            }
+        }
+
         if (!activeSmitePoint.IsActive || activeSmitePoint.IsFinished) return;
 
         float normValue = activeSmitePoint.SmiteValue / 100f;

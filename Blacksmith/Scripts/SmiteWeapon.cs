@@ -18,7 +18,8 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public int spawnItemIndex;
     [SerializeField] private float heatRate = 100f;
     [SerializeField] public float coolRate = 3f;
-    [SerializeField] private float optimalFormingHeat = 750f;
+    [SerializeField] private float minOptimalHeat = 562.5f;
+    [SerializeField] private float maxOptimalHeat = 937.5f;
     [SerializeField] private float maxHeat = 1000f;
     [System.NonSerialized] public float defaultCoolRate;
 
@@ -39,7 +40,6 @@ public class SmiteWeapon : UdonSharpBehaviour
     [Header("Visuals")]
     [SerializeField] private SkinnedMeshRenderer blendShapeRenderer;
     [SerializeField] private int blobShapeIndex;
-    [SerializeField] private Renderer targetRenderer;
     [System.NonSerialized] private MaterialPropertyBlock propBlock;
     [System.NonSerialized] private Color currentEmission;
     [System.NonSerialized] private bool glowDirty;
@@ -48,7 +48,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public bool isStored;
     [System.NonSerialized] public Forge forge;
     [UdonSynced] [System.NonSerialized] public float qualityScore;
-    [SerializeField] private Storage storage;
+    [System.NonSerialized] private Storage storage;
     [SerializeField] private float experiencePerCompletion = 10f;
     [SerializeField] public float baseSellPrice = 10f;
     [System.NonSerialized] public float sellPrice;
@@ -59,6 +59,8 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     [System.NonSerialized] public int totalAttempts;
     [System.NonSerialized] private bool completionInvalidated;
+
+    [SerializeField] private VRC_Pickup pickup;
 
     [System.NonSerialized] bool isInEditor;
 
@@ -93,6 +95,8 @@ public class SmiteWeapon : UdonSharpBehaviour
         syncedPosition = transform.position;
         syncedRotation = transform.rotation;
 
+        if (pickup != null) pickup.pickupable = false;
+
         var firstPoint = GetActiveSmitePoint();
         if (firstPoint != null)
             firstPoint.SetActive(true);
@@ -110,8 +114,18 @@ public class SmiteWeapon : UdonSharpBehaviour
         qualityScore = 0f;
         isCompleted = false;
 
-        if (targetRenderer == null)
-            targetRenderer = GetComponent<Renderer>();
+        storage = GetComponentInParent<Storage>();
+
+        if (storage == null && !isInEditor)
+        {
+            var playerObjects = Networking.GetPlayerObjects(Networking.LocalPlayer);
+            for (int i = 0; i < playerObjects.Length; i++)
+            {
+                if (!Utilities.IsValid(playerObjects[i])) continue;
+                storage = playerObjects[i].GetComponentInChildren<Storage>();
+                if (Utilities.IsValid(storage)) break;
+            }
+        }
 
         propBlock = new MaterialPropertyBlock();
         currentEmission = Color.black;
@@ -119,6 +133,8 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         if (!isInEditor)
             RequestSerialization();
+
+        if (pickup != null) pickup.pickupable = false;
 
         var firstPoint = GetActiveSmitePoint();
         if (firstPoint != null)
@@ -197,7 +213,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     private void UpdateHeatGlow()
     {
-        if (targetRenderer == null || propBlock == null) return;
+        if (blendShapeRenderer == null || propBlock == null) return;
 
         float t = Mathf.Clamp01(currentHeat / maxHeat);
         if (isCompleted) t = 0f;
@@ -212,9 +228,9 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (!glowDirty && targetColor == currentEmission) return;
 
         currentEmission = targetColor;
-        targetRenderer.GetPropertyBlock(propBlock);
+        blendShapeRenderer.GetPropertyBlock(propBlock);
         propBlock.SetColor("_EmissionColor", targetColor);
-        targetRenderer.SetPropertyBlock(propBlock);
+        blendShapeRenderer.SetPropertyBlock(propBlock);
         glowDirty = false;
     }
 
@@ -226,10 +242,8 @@ public class SmiteWeapon : UdonSharpBehaviour
         float norm = currentHeat / maxHeat;
         forge.heatSlider.value = norm;
 
-        float optNorm = optimalFormingHeat / maxHeat;
-        float tol = (optimalFormingHeat * 0.25f) / maxHeat;
-        float low = optNorm - tol;
-        float high = optNorm + tol;
+        float low = minOptimalHeat / maxHeat;
+        float high = maxOptimalHeat / maxHeat;
 
         bool leftToRight = forge.heatSlider.direction == Slider.Direction.LeftToRight;
         bool bottomToTop = forge.heatSlider.direction == Slider.Direction.BottomToTop;
@@ -326,6 +340,21 @@ public class SmiteWeapon : UdonSharpBehaviour
         return null;
     }
 
+    public bool IsHeatOptimal()
+    {
+        return currentHeat >= minOptimalHeat && currentHeat <= maxOptimalHeat;
+    }
+
+    public bool IsHeatTooCold()
+    {
+        return currentHeat < minOptimalHeat;
+    }
+
+    public bool IsHeatTooHot()
+    {
+        return currentHeat > maxOptimalHeat;
+    }
+
     public SmitePoint GetActiveSmitePoint()
     {
         if (smitePoints == null || smitePoints.Length == 0) return null;
@@ -380,16 +409,16 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         if (!Networking.IsOwner(gameObject)) return;
         if (isCompleted) return;
-        Debug.Log("SmiteWeapon: RecordHit: accuracy = " + accuracy + ", currentHeat = " + currentHeat + ", optimalFormingHeat = " + optimalFormingHeat);
+        Debug.Log("SmiteWeapon: RecordHit: accuracy = " + accuracy + ", currentHeat = " + currentHeat + ", minOptimalHeat = " + minOptimalHeat + ", maxOptimalHeat = " + maxOptimalHeat);
 
         totalAttempts++;
 
         if (accuracy <= 0f) return;
 
-        float optimalHeat = optimalFormingHeat;
-        float heatDelta = Mathf.Abs(currentHeat - optimalHeat);
-        float heatTolerance = optimalHeat * 0.25f;
-        float heatFactor = 1f - Mathf.Clamp01(heatDelta / heatTolerance);
+        float optimalMid = (minOptimalHeat + maxOptimalHeat) * 0.5f;
+        float heatTolerance = (maxOptimalHeat - minOptimalHeat) * 0.5f;
+        float heatDelta = Mathf.Abs(currentHeat - optimalMid);
+        float heatFactor = heatTolerance > 0f ? 1f - Mathf.Clamp01(heatDelta / heatTolerance) : 0f;
 
         float hitScore = accuracy * 0.6f + heatFactor * 0.4f;
 
@@ -419,6 +448,7 @@ public class SmiteWeapon : UdonSharpBehaviour
             finishTimeMs = Networking.GetServerTimeInMilliseconds();
             RequestSerialization();
             AwardExperience();
+            if (pickup != null) pickup.pickupable = true;
             TryAutoStore();
             return;
         }
@@ -433,6 +463,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         finishTimeMs = Networking.GetServerTimeInMilliseconds();
         RequestSerialization();
         AwardExperience();
+        if (pickup != null) pickup.pickupable = true;
         TryAutoStore();
         Debug.Log("SmiteWeapon: EvaluateQuality: qualityScore = " + qualityScore + ", hitCount = " + hitCount + ", totalAttempts = " + totalAttempts);
     }
