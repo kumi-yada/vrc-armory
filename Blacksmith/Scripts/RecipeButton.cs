@@ -2,6 +2,7 @@
 using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 using VRC.Udon;
@@ -13,13 +14,13 @@ public class RecipeButton : UdonSharpBehaviour
     [SerializeField] private Forge forge;
 
     private Button button;
-    private Text label;
+    private TextMeshProUGUI label;
     private int recipeIndex = -1;
 
     void Start()
     {
         button = GetComponent<Button>();
-        label = GetComponentInChildren<Text>();
+        label = GetComponentInChildren<TextMeshProUGUI>();
 
         if (recipe != null && label != null)
             label.text = recipe.recipeName;
