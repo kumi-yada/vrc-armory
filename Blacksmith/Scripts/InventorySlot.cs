@@ -11,7 +11,6 @@ public class InventorySlot : UdonSharpBehaviour
     [UdonSynced] public int itemIndex = -1;
     [UdonSynced] public float quality;
     [UdonSynced] public int finishTimeMs;
-    [UdonSynced] public bool isShown;
 
     [SerializeField] private TextMeshProUGUI recipeNameText;
     [SerializeField] private TextMeshProUGUI qualityNameText;
@@ -47,7 +46,6 @@ public class InventorySlot : UdonSharpBehaviour
         itemIndex = -1;
         quality = 0f;
         finishTimeMs = 0;
-        isShown = false;
 
         if (recipeNameText != null)
             recipeNameText.text = "";
@@ -63,6 +61,7 @@ public class InventorySlot : UdonSharpBehaviour
 
     public void OnClick()
     {
+        Debug.Log("InventorySlot: OnClick: slot=" + slotIndex + " itemIndex=" + itemIndex);
         if (itemIndex == -1) return;
         if (storage != null && storage.currentMode == Storage.MODE_SELL)
             SellItem();
@@ -73,12 +72,12 @@ public class InventorySlot : UdonSharpBehaviour
     public void ToggleStash()
     {
         if (itemIndex == -1) return;
-        isShown = !isShown;
-        if (isShown)
-            DisplayWeapon();
-        else
+        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
+        if (!Utilities.IsValid(weapon)) return;
+        if (weapon.isDisplayed)
             StashWeapon();
-        RequestSerialization();
+        else
+            DisplayWeapon();
     }
 
     private void StashWeapon()
@@ -87,16 +86,26 @@ public class InventorySlot : UdonSharpBehaviour
         if (forge == null) return;
         SmiteWeapon weapon = forge.GetItemByIndex(itemIndex);
         if (!Utilities.IsValid(weapon)) return;
-        if (weapon.gameObject.activeSelf)
-            weapon.gameObject.SetActive(false);
+        weapon.Hide();
     }
 
     public void Stash()
     {
-        if (!isShown) return;
-        isShown = false;
-        StashWeapon();
-        RequestSerialization();
+        if (itemIndex == -1) return;
+        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
+        if (!Utilities.IsValid(weapon) || !weapon.isDisplayed) return;
+        weapon.Hide();
+    }
+
+    public void SetDisplayed(bool displayed)
+    {
+        if (itemIndex == -1) return;
+        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
+        if (!Utilities.IsValid(weapon)) return;
+        if (displayed)
+            weapon.Show(this);
+        else
+            weapon.Hide();
     }
 
     private void DisplayWeapon()
@@ -113,9 +122,9 @@ public class InventorySlot : UdonSharpBehaviour
         if (!Utilities.IsValid(localPlayer)) return;
 
         Vector3 forward = localPlayer.GetRotation() * Vector3.forward;
-        weapon.transform.position = localPlayer.GetPosition() + forward * 1.5f + Vector3.up * 0.5f;
+        weapon.transform.position = localPlayer.GetPosition() + forward * 0.5f + Vector3.up * 0.5f;
         weapon.transform.rotation = Quaternion.identity;
-        weapon.gameObject.SetActive(true);
+        weapon.Show(this);
     }
 
     public void SellItem()
@@ -158,9 +167,6 @@ public class InventorySlot : UdonSharpBehaviour
         SmiteWeapon weapon = null;
         if (forge != null)
             weapon = forge.GetItemByIndex(itemIndex);
-
-        if (Utilities.IsValid(weapon))
-            weapon.gameObject.SetActive(isShown);
 
         if (recipeNameText != null)
             recipeNameText.text = weapon != null ? weapon.recipeName : "";

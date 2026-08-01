@@ -52,8 +52,7 @@ public class Storage : UdonSharpBehaviour
             if (!Utilities.IsValid(slots[i])) continue;
             if (slots[i].itemIndex != -1) continue;
             slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName, weapon.finishTimeMs);
-            slots[i].isShown = true;
-            slots[i].RequestSerialization();
+            slots[i].SetDisplayed(true);
             return;
         }
     }
@@ -71,8 +70,7 @@ public class Storage : UdonSharpBehaviour
             if (!Utilities.IsValid(slots[i])) continue;
             if (slots[i].itemIndex != -1) continue;
             slots[i].SetItem(idx, weapon.qualityScore, weapon.recipeName, weapon.finishTimeMs);
-            slots[i].isShown = false;
-            slots[i].RequestSerialization();
+            slots[i].SetDisplayed(false);
             return;
         }
     }
