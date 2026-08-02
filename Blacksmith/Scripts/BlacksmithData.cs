@@ -4,6 +4,7 @@ public static class BlacksmithData
 {
     public const string EXP_KEY = "blacksmith_exp";
     public const string GOLD_KEY = "blacksmith_gold";
+    public const string FORGE_LEVEL_KEY = "blacksmith_forge_level";
 
     public static int GetLevel(float exp)
     {

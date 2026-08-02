@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.SDK3.Persistence;
 using TMPro;
 
 
@@ -27,6 +28,12 @@ public class Forge : UdonSharpBehaviour
     [SerializeField] public RectTransform optimalRangeMarkerLow;
     [SerializeField] public RectTransform optimalRangeMarkerHigh;
 
+    [Header("Upgrade")]
+    [SerializeField] private int[] upgradeCosts;
+    [SerializeField] private Button upgradeButton;
+    [SerializeField] private TextMeshProUGUI upgradeText;
+    [SerializeField] private TextMeshProUGUI levelText;
+
     private int selectedRecipeIndex = -1;
     private SmiteWeapon currentItem;
     [UdonSynced] private bool isActive;
@@ -43,6 +50,8 @@ public class Forge : UdonSharpBehaviour
             heatArea.SetActive(false);
         if (Utilities.IsValid(particleField))
             particleField.Stop();
+
+        RefreshUpgradeButton();
     }
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
@@ -186,6 +195,71 @@ public class Forge : UdonSharpBehaviour
         return child.GetComponent<SmiteWeapon>();
     }
 
-    // Recipe selection shortcuts
-    public void SelectKnife() { SelectRecipe(0); }
+    public int GetLevel()
+    {
+        if (!Utilities.IsValid(Networking.LocalPlayer)) return 1;
+        return Mathf.Max(1, (int)PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.FORGE_LEVEL_KEY));
+    }
+
+    public int GetMaxLevel()
+    {
+        return upgradeCosts != null ? upgradeCosts.Length + 1 : 1;
+    }
+
+    public bool IsMaxLevel()
+    {
+        return GetLevel() >= GetMaxLevel();
+    }
+
+    public int GetNextUpgradeCost()
+    {
+        int level = GetLevel();
+        if (upgradeCosts == null || level > upgradeCosts.Length) return 0;
+        return upgradeCosts[level - 1];
+    }
+
+    public bool CanUpgrade()
+    {
+        if (IsMaxLevel()) return false;
+        if (!Utilities.IsValid(Networking.LocalPlayer)) return false;
+        float gold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        return gold >= GetNextUpgradeCost();
+    }
+
+    public void UpgradeForge()
+    {
+        if (!Utilities.IsValid(Networking.LocalPlayer)) return;
+        if (IsMaxLevel()) return;
+
+        int cost = GetNextUpgradeCost();
+        float gold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        if (gold < cost) return;
+
+        int level = GetLevel();
+        PlayerData.SetFloat(BlacksmithData.GOLD_KEY, gold - cost);
+        PlayerData.SetFloat(BlacksmithData.FORGE_LEVEL_KEY, level + 1);
+        Debug.Log("Forge: UpgradeForge: level " + level + " -> " + (level + 1) + " cost=" + cost);
+        RefreshUpgradeButton();
+    }
+
+    public void RefreshUpgradeButton()
+    {
+        if (upgradeButton == null) return;
+        upgradeButton.interactable = CanUpgrade();
+
+        if (levelText != null)
+            levelText.text = "Forge Lv. " + GetLevel();
+
+        if (upgradeText == null) return;
+        if (IsMaxLevel())
+            upgradeText.text = "Max Level";
+        else
+            upgradeText.text = "Upgrade (" + GetNextUpgradeCost() + "g)";
+    }
+
+    public override void OnPlayerDataUpdated(VRCPlayerApi player, PlayerData.Info[] infos)
+    {
+        if (player == null || !player.isLocal) return;
+        RefreshUpgradeButton();
+    }
 }
