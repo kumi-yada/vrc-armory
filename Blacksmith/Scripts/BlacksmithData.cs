@@ -8,13 +8,13 @@ public static class BlacksmithData
 
     public static int GetLevel(float exp)
     {
-        return Mathf.FloorToInt(Mathf.Sqrt(exp / 100f)) + 1;
+        return Mathf.FloorToInt(exp / 100f) + 1;
     }
 
     public static float ExpForLevel(int level)
     {
         int l = Mathf.Max(1, level) - 1;
-        return l * l * 100f;
+        return l * 100f;
     }
 
     public static float ProgressToNextLevel(float exp)

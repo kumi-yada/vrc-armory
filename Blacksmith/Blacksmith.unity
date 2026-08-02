@@ -725,12 +725,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -13850,7 +13850,7 @@ PrefabInstance:
     - target: {fileID: 7432135734777940712, guid: 20e04947841cb14c4abc36bfca462c3d,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.00000004819234
+      value: 0.000057013054
       objectReference: {fileID: 0}
     - target: {fileID: 7439071624358159105, guid: 20e04947841cb14c4abc36bfca462c3d,
         type: 3}
@@ -18965,12 +18965,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -19126,12 +19126,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -25359,12 +25359,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -28809,12 +28809,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -39267,12 +39267,12 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: coolRate
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
