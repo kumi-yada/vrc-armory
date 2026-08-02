@@ -134,7 +134,7 @@ public class InventorySlot : UdonSharpBehaviour
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
         if (!Utilities.IsValid(weapon)) return;
 
-        float price = weapon.baseSellPrice * (1f + quality);
+        float price = Mathf.CeilToInt(weapon.baseSellPrice * (1f + quality));
 
         float currentGold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
         PlayerData.SetFloat(BlacksmithData.GOLD_KEY, currentGold + price);
@@ -174,10 +174,12 @@ public class InventorySlot : UdonSharpBehaviour
         if (qualityNameText != null)
             qualityNameText.text = GetQualityLabel(quality);
 
+        bool sellMode = storage != null && storage.currentMode == Storage.MODE_SELL;
+
         if (sellPriceText != null)
         {
             float price = weapon != null ? weapon.baseSellPrice * (1f + quality) : 0f;
-            sellPriceText.text = price > 0f ? Mathf.RoundToInt(price) + "g" : "";
+            sellPriceText.text = sellMode && price > 0f ? Mathf.CeilToInt(price) + "g" : "";
         }
 
         UpdateFinishDateText();
@@ -197,7 +199,17 @@ public class InventorySlot : UdonSharpBehaviour
     private void UpdateFinishDateText()
     {
         if (finishDateText == null) return;
+        if (storage != null && storage.currentMode == Storage.MODE_SELL)
+        {
+            finishDateText.text = "";
+            return;
+        }
         finishDateText.text = finishTimeMs > 0 ? "Finished: " + FormatElapsed(finishTimeMs) : "";
+    }
+
+    public void Refresh()
+    {
+        RefreshUI();
     }
 
     private string FormatElapsed(int finishMs)

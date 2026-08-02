@@ -17,6 +17,11 @@ public class Storage : UdonSharpBehaviour
     public void SetMode(string mode)
     {
         currentMode = mode;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (!Utilities.IsValid(slots[i])) continue;
+            slots[i].Refresh();
+        }
     }
 
     public bool IsItemStored(int idx)
