@@ -30,9 +30,6 @@ public class Forge : UdonSharpBehaviour
 
     [Header("Upgrade")]
     [SerializeField] private int[] upgradeCosts;
-    [SerializeField] private Button upgradeButton;
-    [SerializeField] private TextMeshProUGUI upgradeText;
-    [SerializeField] private TextMeshProUGUI levelText;
 
     private int selectedRecipeIndex = -1;
     private SmiteWeapon currentItem;
@@ -50,8 +47,6 @@ public class Forge : UdonSharpBehaviour
             heatArea.SetActive(false);
         if (Utilities.IsValid(particleField))
             particleField.Stop();
-
-        RefreshUpgradeButton();
     }
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
@@ -239,27 +234,5 @@ public class Forge : UdonSharpBehaviour
         PlayerData.SetFloat(BlacksmithData.GOLD_KEY, gold - cost);
         PlayerData.SetFloat(BlacksmithData.FORGE_LEVEL_KEY, level + 1);
         Debug.Log("Forge: UpgradeForge: level " + level + " -> " + (level + 1) + " cost=" + cost);
-        RefreshUpgradeButton();
-    }
-
-    public void RefreshUpgradeButton()
-    {
-        if (upgradeButton == null) return;
-        upgradeButton.interactable = CanUpgrade();
-
-        if (levelText != null)
-            levelText.text = "Forge Lv. " + GetLevel();
-
-        if (upgradeText == null) return;
-        if (IsMaxLevel())
-            upgradeText.text = "Max Level";
-        else
-            upgradeText.text = "Upgrade (" + GetNextUpgradeCost() + "g)";
-    }
-
-    public override void OnPlayerDataUpdated(VRCPlayerApi player, PlayerData.Info[] infos)
-    {
-        if (player == null || !player.isLocal) return;
-        RefreshUpgradeButton();
     }
 }
