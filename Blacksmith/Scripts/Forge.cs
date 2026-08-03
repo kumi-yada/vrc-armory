@@ -144,7 +144,6 @@ public class Forge : UdonSharpBehaviour
         currentItem.ResetState();
         currentItem.transform.position = pos;
         currentItem.transform.rotation = Quaternion.identity;
-        currentItem.gameObject.SetActive(true);
     }
 
     private void StartHeat()

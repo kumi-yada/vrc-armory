@@ -43,11 +43,12 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] private Color currentEmission;
     [System.NonSerialized] private bool glowDirty;
 
-    [UdonSynced] [System.NonSerialized] public bool isCompleted;    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
+    [UdonSynced] [System.NonSerialized] public bool isCompleted;
+    [UdonSynced] [System.NonSerialized] public int finishTimeMs;
     [UdonSynced] [System.NonSerialized] public bool isDisplayed;
+    [UdonSynced] [System.NonSerialized] public float qualityScore;
     [System.NonSerialized] public InventorySlot activeSlot;
     [System.NonSerialized] public Forge forge;
-    [UdonSynced] [System.NonSerialized] public float qualityScore;
     [System.NonSerialized] private Storage storage;
     [SerializeField] private float experiencePerCompletion = 10f;
     [SerializeField] public float baseSellPrice = 10f;
@@ -72,12 +73,24 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     public void ResetState()
     {
+        if (activeSlot != null)
+        {
+            activeSlot.Stash();
+        }
+
+        ApplyCraftingVisuals();
+        isDisplayed = false;
+        activeSlot = null;
+        RequestSerialization();
+        Debug.Log("SmiteWeapon: ResetState: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
+    }
+
+    private void ApplyCraftingVisuals()
+    {
         currentHeat = 0f;
         isHeated = false;
         isHeld = false;
         isCompleted = false;
-        isDisplayed = false;
-        activeSlot = null;
         qualityScore = 0f;
         sellPrice = 0f;
         finishTimeMs = 0;
@@ -102,9 +115,6 @@ public class SmiteWeapon : UdonSharpBehaviour
         var firstPoint = GetActiveSmitePoint();
         if (firstPoint != null)
             firstPoint.SetActive(true);
-
-        RequestSerialization();
-        Debug.Log("SmiteWeapon: ResetState: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
 
     void Start()
@@ -116,9 +126,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         qualityScore = 0f;
         isCompleted = false;
 
-        storage = GetComponentInParent<Storage>();
-
-        if (storage == null && !isInEditor)
+        if (!isInEditor)
         {
             var playerObjects = Networking.GetPlayerObjects(Networking.LocalPlayer);
             for (int i = 0; i < playerObjects.Length; i++)
@@ -155,38 +163,78 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (!isHeld)
             transform.SetPositionAndRotation(syncedPosition, syncedRotation);
 
-        if (isCompleted)
-            gameObject.SetActive(isDisplayed);
+        if (isCompleted && !isDisplayed)
+            HidePosition();
 
-        if (!Networking.IsOwner(gameObject))
-        {
-            UpdateHeatGlow();
-            UpdateBlobShape();
-        }
+        UpdateHeatGlow();
+        UpdateBlobShape();
+    }
+
+    private void HidePosition()
+    {
+        transform.position = new Vector3(0f, -1000f, 0f);
+        transform.rotation = Quaternion.identity;
     }
 
     public void Show(InventorySlot slot)
     {
-        if (!Networking.IsOwner(gameObject))
-            Networking.SetOwner(Networking.LocalPlayer, gameObject);
-
+        if (!Networking.IsOwner(gameObject)) return;
         activeSlot = slot;
         isDisplayed = true;
-        gameObject.SetActive(true);
+
         if (pickup != null) pickup.pickupable = true;
+
+        ApplyFinishedVisuals();
+        if (Utilities.IsValid(slot))
+        {
+            qualityScore = slot.quality;
+            finishTimeMs = slot.finishTimeMs;
+            sellPrice = baseSellPrice * (1f + qualityScore);
+        }
+
         RequestSerialization();
         Debug.Log("SmiteWeapon: Show: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
 
+    private void ApplyFinishedVisuals()
+    {
+        isCompleted = true;
+        isHeated = false;
+        currentHeat = 0f;
+        currentSmiteIndex = smitePoints != null ? smitePoints.Length : 0;
+
+        if (smitePoints != null)
+        {
+            for (int i = 0; i < smitePoints.Length; i++)
+            {
+                if (smitePoints[i] != null)
+                    smitePoints[i].SetActive(false);
+            }
+        }
+
+        UpdateBlobShape();
+
+        currentEmission = Color.black;
+        glowDirty = true;
+        UpdateHeatGlow();
+
+        if (pickup != null) pickup.pickupable = true;
+    }
+
     public void Hide()
     {
-        if (!Networking.IsOwner(gameObject))
-            Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        if (!Networking.IsOwner(gameObject)) return;
 
         activeSlot = null;
         isDisplayed = false;
-        gameObject.SetActive(false);
-        if (pickup != null) pickup.pickupable = false;
+
+        if (pickup != null)
+        {
+            pickup.Drop();
+            pickup.pickupable = false;
+        }
+        HidePosition();
+
         RequestSerialization();
         Debug.Log("SmiteWeapon: Hide: recipeName = " + recipeName + ", spawnItemIndex = " + spawnItemIndex);
     }
@@ -444,8 +492,15 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     private void TryAutoStore()
     {
-        if (!Utilities.IsValid(storage)) return;
+        if (!Utilities.IsValid(storage))
+        {
+            Debug.Log("Cannot autostore without storage");
+            return;
+        }
+
+        Debug.Log("Autostoring item");
         storage.AutoStoreItem(this);
+
         if (Utilities.IsValid(forge))
             forge.ClearCurrentItem();
     }

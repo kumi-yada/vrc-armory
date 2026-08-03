@@ -16,14 +16,12 @@ public class InventorySlot : UdonSharpBehaviour
     [SerializeField] private TextMeshProUGUI qualityNameText;
     [SerializeField] private TextMeshProUGUI finishDateText;
     [SerializeField] private TextMeshProUGUI sellPriceText;
-    [SerializeField] private Forge forge;
-    [SerializeField] private Storage storage;
-    [SerializeField] private int slotIndex;
+    [SerializeField] private TextMeshProUGUI displayStatusText;
+    [System.NonSerialized] public int slotIndex;
 
-    public void SetItem(int index, float q, string recipeName, int timeMs)
+    public void StoreItem(int index, float q, string recipeName, int timeMs)
     {
-        if (!Networking.IsOwner(gameObject))
-            Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        if (!Networking.IsOwner(gameObject)) return;
 
         itemIndex = index;
         quality = q;
@@ -40,8 +38,7 @@ public class InventorySlot : UdonSharpBehaviour
 
     public void Clear()
     {
-        if (!Networking.IsOwner(gameObject))
-            Networking.SetOwner(Networking.LocalPlayer, gameObject);
+        if (!Networking.IsOwner(gameObject)) return;
 
         itemIndex = -1;
         quality = 0f;
@@ -54,7 +51,15 @@ public class InventorySlot : UdonSharpBehaviour
         if (finishDateText != null)
             finishDateText.text = "";
         if (sellPriceText != null)
+        {
             sellPriceText.text = "";
+            sellPriceText.gameObject.SetActive(false);
+        }
+        if (displayStatusText != null)
+        {
+            displayStatusText.text = "";
+            displayStatusText.gameObject.SetActive(false);
+        }
 
         RequestSerialization();
     }
@@ -63,6 +68,7 @@ public class InventorySlot : UdonSharpBehaviour
     {
         Debug.Log("InventorySlot: OnClick: slot=" + slotIndex + " itemIndex=" + itemIndex);
         if (itemIndex == -1) return;
+        Storage storage = GetStorage();
         if (storage != null && storage.currentMode == Storage.MODE_SELL)
             SellItem();
         else
@@ -72,49 +78,47 @@ public class InventorySlot : UdonSharpBehaviour
     public void ToggleStash()
     {
         if (itemIndex == -1) return;
+        Forge forge = GetForge();
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
         if (!Utilities.IsValid(weapon)) return;
-        if (weapon.isDisplayed)
-            StashWeapon();
+        if (IsCurrentSlotDisplayed(weapon))
+        {
+            weapon.Hide();
+            RefreshUI();
+        }
         else
+        {
             DisplayWeapon();
+        }
     }
 
-    private void StashWeapon()
+    private bool IsCurrentSlotDisplayed(SmiteWeapon weapon)
     {
-        Debug.Log("InventorySlot: StashWeapon: slot=" + slotIndex);
-        if (forge == null) return;
-        SmiteWeapon weapon = forge.GetItemByIndex(itemIndex);
-        if (!Utilities.IsValid(weapon)) return;
-        weapon.Hide();
+        if (itemIndex == -1) return false;
+        if (!Utilities.IsValid(weapon)) return false;
+        if (weapon.activeSlot != null && weapon.activeSlot.slotIndex != slotIndex) return false;
+        return weapon.isDisplayed;
     }
 
     public void Stash()
     {
         if (itemIndex == -1) return;
+        Forge forge = GetForge();
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
         if (!Utilities.IsValid(weapon) || !weapon.isDisplayed) return;
         weapon.Hide();
-    }
-
-    public void SetDisplayed(bool displayed)
-    {
-        if (itemIndex == -1) return;
-        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
-        if (!Utilities.IsValid(weapon)) return;
-        if (displayed)
-            weapon.Show(this);
-        else
-            weapon.Hide();
+        RefreshUI();
     }
 
     private void DisplayWeapon()
     {
         Debug.Log("InventorySlot: DisplayWeapon: slot=" + slotIndex);
+        Forge forge = GetForge();
         if (forge == null) return;
         SmiteWeapon weapon = forge.GetItemByIndex(itemIndex);
         if (!Utilities.IsValid(weapon)) return;
 
+        Storage storage = GetStorage();
         if (storage != null)
             storage.StashOtherSlots(this);
 
@@ -122,20 +126,21 @@ public class InventorySlot : UdonSharpBehaviour
         if (!Utilities.IsValid(localPlayer)) return;
 
         Vector3 forward = localPlayer.GetRotation() * Vector3.forward;
-        weapon.transform.position = localPlayer.GetPosition() + forward * 0.5f + Vector3.up * 0.5f;
+        weapon.transform.position = localPlayer.GetPosition() + forward * 0.7f + Vector3.up * 1.5f;
         weapon.transform.rotation = Quaternion.identity;
         weapon.Show(this);
+        UpdateDisplayStatus(true);
     }
 
     public void SellItem()
     {
         if (itemIndex == -1) return;
 
+        Forge forge = GetForge();
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
         if (!Utilities.IsValid(weapon)) return;
 
         float price = Mathf.CeilToInt(weapon.baseSellPrice * (1f + quality));
-
         float currentGold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
         PlayerData.SetFloat(BlacksmithData.GOLD_KEY, currentGold + price);
         Debug.Log("InventorySlot: SellItem: slot=" + slotIndex + " item=" + weapon.recipeName + " price=" + price + " newGold=" + (currentGold + price));
@@ -153,18 +158,33 @@ public class InventorySlot : UdonSharpBehaviour
         RefreshUI();
     }
 
+    private void EmptyUI()
+    {
+        if (recipeNameText != null) recipeNameText.text = "";
+        if (qualityNameText != null) qualityNameText.text = "";
+        if (finishDateText != null) finishDateText.text = "";
+        if (sellPriceText != null)
+        {
+            sellPriceText.text = "";
+            sellPriceText.gameObject.SetActive(false);
+        }
+        if (displayStatusText != null)
+        {
+            displayStatusText.text = "";
+            displayStatusText.gameObject.SetActive(false);
+        }
+    }
+
     private void RefreshUI()
     {
         if (itemIndex == -1)
         {
-            if (recipeNameText != null) recipeNameText.text = "";
-            if (qualityNameText != null) qualityNameText.text = "";
-            if (finishDateText != null) finishDateText.text = "";
-            if (sellPriceText != null) sellPriceText.text = "";
+            EmptyUI();
             return;
         }
 
         SmiteWeapon weapon = null;
+        Forge forge = GetForge();
         if (forge != null)
             weapon = forge.GetItemByIndex(itemIndex);
 
@@ -174,15 +194,32 @@ public class InventorySlot : UdonSharpBehaviour
         if (qualityNameText != null)
             qualityNameText.text = GetQualityLabel(quality);
 
+        Storage storage = GetStorage();
         bool sellMode = storage != null && storage.currentMode == Storage.MODE_SELL;
 
         if (sellPriceText != null)
         {
             float price = weapon != null ? weapon.baseSellPrice * (1f + quality) : 0f;
-            sellPriceText.text = sellMode && price > 0f ? Mathf.CeilToInt(price) + "g" : "";
+            bool showPrice = sellMode && price > 0f;
+            sellPriceText.text = showPrice ? Mathf.CeilToInt(price) + "g" : "";
+            sellPriceText.gameObject.SetActive(showPrice);
         }
 
         UpdateFinishDateText();
+        UpdateDisplayStatus(weapon != null && weapon.activeSlot != null && weapon.activeSlot.slotIndex == slotIndex);
+    }
+
+    private void UpdateDisplayStatus(bool displayed)
+    {
+        if (displayStatusText == null) return;
+        if (itemIndex == -1)
+        {
+            displayStatusText.text = "";
+            displayStatusText.gameObject.SetActive(false);
+            return;
+        }
+        displayStatusText.text = displayed ? "On display" : "";
+        displayStatusText.gameObject.SetActive(displayed);
     }
 
     private string GetQualityLabel(float q)
@@ -199,6 +236,7 @@ public class InventorySlot : UdonSharpBehaviour
     private void UpdateFinishDateText()
     {
         if (finishDateText == null) return;
+        Storage storage = GetStorage();
         if (storage != null && storage.currentMode == Storage.MODE_SELL)
         {
             finishDateText.text = "";
@@ -210,6 +248,38 @@ public class InventorySlot : UdonSharpBehaviour
     public void Refresh()
     {
         RefreshUI();
+    }
+
+    private Forge GetForge()
+    {
+        VRCPlayerApi local = Networking.LocalPlayer;
+        if (!Utilities.IsValid(local)) return null;
+
+        GameObject[] playerObjects = Networking.GetPlayerObjects(local);
+        for (int i = 0; i < playerObjects.Length; i++)
+        {
+            if (!Utilities.IsValid(playerObjects[i])) continue;
+            Forge forge = playerObjects[i].GetComponentInChildren<Forge>();
+            if (Utilities.IsValid(forge)) return forge;
+        }
+
+        return null;
+    }
+
+    private Storage GetStorage()
+    {
+        VRCPlayerApi local = Networking.LocalPlayer;
+        if (!Utilities.IsValid(local)) return null;
+
+        GameObject[] playerObjects = Networking.GetPlayerObjects(local);
+        for (int i = 0; i < playerObjects.Length; i++)
+        {
+            if (!Utilities.IsValid(playerObjects[i])) continue;
+            Storage storage = playerObjects[i].GetComponentInChildren<Storage>();
+            if (Utilities.IsValid(storage)) return storage;
+        }
+
+        return null;
     }
 
     private string FormatElapsed(int finishMs)
