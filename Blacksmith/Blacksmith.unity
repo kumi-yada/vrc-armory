@@ -884,7 +884,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -20229,7 +20229,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 15
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -20390,7 +20390,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 15
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -27021,7 +27021,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 15
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -30417,7 +30417,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
@@ -32737,7 +32737,7 @@ PrefabInstance:
     - target: {fileID: 3341799080641299739, guid: 7fa27fb23a21760408ce390b43f1c881,
         type: 3}
       propertyPath: _syncMethod
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3400440132410682607, guid: 7fa27fb23a21760408ce390b43f1c881,
         type: 3}
@@ -41502,7 +41502,7 @@ PrefabInstance:
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}
       propertyPath: heatRate
-      value: 20
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4220239598500610126, guid: 48756160c0e92033e8dd2c6b78709db8,
         type: 3}

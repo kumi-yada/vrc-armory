@@ -11,6 +11,7 @@ public class RecipeButton : UdonSharpBehaviour
 {
     [SerializeField] public SmiteWeapon recipe;
     [SerializeField] private int minimumLevel = 1;
+    [SerializeField] private int minimumForgeLevel = 1;
     [SerializeField] private Forge forge;
 
     private Button button;
@@ -53,6 +54,8 @@ public class RecipeButton : UdonSharpBehaviour
 
         float exp = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.EXP_KEY);
         int level = BlacksmithData.GetLevel(exp);
-        button.interactable = level >= minimumLevel;
+        float forgeExp = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.FORGE_LEVEL_KEY);
+        int forgeLevel = Mathf.Max(1, (int)forgeExp);
+        button.interactable = level >= minimumLevel && forgeLevel >= minimumForgeLevel;
     }
 }

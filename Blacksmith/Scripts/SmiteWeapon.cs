@@ -221,6 +221,8 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (isHeated)
         {
             float effectiveRate = heatRate;
+            if (forge != null)
+                effectiveRate *= forge.GetHeatMultiplier();
             currentHeat = Mathf.Min(currentHeat + effectiveRate * Time.deltaTime, maxHeat);
         }
         else if (currentHeat > 0f)

@@ -30,6 +30,7 @@ public class Forge : UdonSharpBehaviour
 
     [Header("Upgrade")]
     [SerializeField] private int[] upgradeCosts;
+    [SerializeField] private float[] heatMultipliers;
 
     private int selectedRecipeIndex = -1;
     private SmiteWeapon currentItem;
@@ -211,6 +212,15 @@ public class Forge : UdonSharpBehaviour
         int level = GetLevel();
         if (upgradeCosts == null || level > upgradeCosts.Length) return 0;
         return upgradeCosts[level - 1];
+    }
+
+    public float GetHeatMultiplier()
+    {
+        if (heatMultipliers == null || heatMultipliers.Length == 0) return 1f;
+
+        int level = GetLevel();
+        if (level > heatMultipliers.Length) level = heatMultipliers.Length;
+        return heatMultipliers[level - 1];
     }
 
     public bool CanUpgrade()

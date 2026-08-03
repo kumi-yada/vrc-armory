@@ -10465,6 +10465,12 @@ MonoBehaviour:
   optimalRangeMarkerLow: {fileID: 543131952504661497}
   optimalRangeMarkerHigh: {fileID: 9166957314581251522}
   upgradeCosts: 640000002c01000058020000e8030000d0070000
+  heatMultipliers:
+  - 0.25
+  - 0.5
+  - 1.5
+  - 3
+  - 6
 --- !u!114 &7320276914569488625
 MonoBehaviour:
   m_ObjectHideFlags: 0
