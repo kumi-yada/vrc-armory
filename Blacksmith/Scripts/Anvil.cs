@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
+using VRC.SDK3.UdonNetworkCalling;
 using TMPro;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
@@ -16,6 +18,10 @@ public class Anvil : UdonSharpBehaviour
     [SerializeField] private Image sliderFillImage;
     [SerializeField] private RectTransform sliderValueMarker;
     [SerializeField] private TextMeshProUGUI statusText;
+
+    [Header("Effects")]
+    [SerializeField] private ParticleSystem hitParticles;
+    [SerializeField] private AudioSource hitAudio;
 
     [System.NonSerialized] public SmitePoint activeSmitePoint;
 
@@ -58,6 +64,26 @@ public class Anvil : UdonSharpBehaviour
         flashColor = hit ? Color.green : Color.red;
     }
 
+    [NetworkCallable]
+    public void PlaySmiteEffects(float accuracy)
+    {
+        if (accuracy >= 0.6f)
+        {
+            if (Utilities.IsValid(hitParticles))
+            {
+                if (Utilities.IsValid(activeSmitePoint))
+                    hitParticles.transform.position = activeSmitePoint.transform.position;
+                hitParticles.Play();
+            }
+        }
+
+        if (Utilities.IsValid(hitAudio))
+        {
+            hitAudio.pitch = Mathf.Lerp(0.6f, 1.2f, accuracy);
+            hitAudio.Play();
+        }
+    }
+
     void Update()
     {
         if (Utilities.IsValid(uiCanvas) && uiCanvas.enabled)
@@ -66,7 +92,7 @@ public class Anvil : UdonSharpBehaviour
             if (Utilities.IsValid(player))
             {
                 Vector3 target = player.GetTrackingData(VRCPlayerApi.TrackingDataType.Head).position;
-                uiCanvas.transform.rotation = Quaternion.LookRotation(target - uiCanvas.transform.position);
+                uiCanvas.transform.rotation = Quaternion.LookRotation(target - uiCanvas.transform.position) * Quaternion.Euler(0f, 180f, 0f);
             }
         }
 

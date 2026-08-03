@@ -2,7 +2,6 @@
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon.Common.Interfaces;
-using VRC.SDK3.UdonNetworkCalling;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SmitePoint : UdonSharpBehaviour
@@ -19,14 +18,6 @@ public class SmitePoint : UdonSharpBehaviour
     [System.NonSerialized] public int CurrentSmiteHits;
     [System.NonSerialized] public SmiteWeapon weapon;
     private Anvil anvil;
-
-    [Header("Effects")]
-    [SerializeField] private ParticleSystem perfectParticles;
-    [SerializeField] private AudioSource perfectAudio;
-    [SerializeField] private ParticleSystem goodParticles;
-    [SerializeField] private AudioSource goodAudio;
-    [SerializeField] private ParticleSystem hitParticles;
-    [SerializeField] private AudioSource hitAudio;
 
     private bool movingUp = true;
 
@@ -96,7 +87,8 @@ public class SmitePoint : UdonSharpBehaviour
             if (Utilities.IsValid(weapon))
                 weapon.RecordHit(accuracy);
 
-            SendCustomNetworkEvent(NetworkEventTarget.All, nameof(PlaySmiteEffects), accuracy);
+            if (Utilities.IsValid(anvil))
+                anvil.SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Anvil.PlaySmiteEffects), accuracy);
 
             CurrentSmiteHits++;
             RandomizeHitArea();
@@ -126,26 +118,6 @@ public class SmitePoint : UdonSharpBehaviour
         {
             anvil.SetActiveSmitePoint(null);
             anvil.HideUI();
-        }
-    }
-
-    [NetworkCallable]
-    public void PlaySmiteEffects(float accuracy)
-    {
-        if (accuracy >= 0.9f)
-        {
-            if (Utilities.IsValid(perfectParticles)) perfectParticles.Play();
-            if (Utilities.IsValid(perfectAudio)) perfectAudio.Play();
-        }
-        else if (accuracy >= 0.6f)
-        {
-            if (Utilities.IsValid(goodParticles)) goodParticles.Play();
-            if (Utilities.IsValid(goodAudio)) goodAudio.Play();
-        }
-        else
-        {
-            if (Utilities.IsValid(hitParticles)) hitParticles.Play();
-            if (Utilities.IsValid(hitAudio)) hitAudio.Play();
         }
     }
 

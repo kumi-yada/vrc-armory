@@ -22,7 +22,6 @@ public class Forge : UdonSharpBehaviour
 
     [Header("Heat")]
     [SerializeField] private GameObject heatArea;
-    [SerializeField] private ParticleSystem particleField;
     [SerializeField] public Slider heatSlider;
     [SerializeField] public Image optimalRangeImage;
     [SerializeField] public RectTransform optimalRangeMarkerLow;
@@ -46,8 +45,6 @@ public class Forge : UdonSharpBehaviour
 
         if (Utilities.IsValid(heatArea))
             heatArea.SetActive(false);
-        if (Utilities.IsValid(particleField))
-            particleField.Stop();
     }
 
     public override void OnPlayerTriggerEnter(VRCPlayerApi player)
@@ -70,12 +67,8 @@ public class Forge : UdonSharpBehaviour
 
     public override void OnDeserialization()
     {
-        if (!Utilities.IsValid(particleField)) return;
-
-        if (isActive)
-            particleField.Play();
-        else
-            particleField.Stop();
+        if (Utilities.IsValid(heatArea))
+            heatArea.SetActive(isActive);
     }
 
     public void SelectRecipe(int index)
@@ -159,8 +152,6 @@ public class Forge : UdonSharpBehaviour
         isActive = true;
         if (Utilities.IsValid(heatArea))
             heatArea.SetActive(true);
-        if (Utilities.IsValid(particleField))
-            particleField.Play();
         RequestSerialization();
     }
 
@@ -169,8 +160,6 @@ public class Forge : UdonSharpBehaviour
         isActive = false;
         if (Utilities.IsValid(heatArea))
             heatArea.SetActive(false);
-        if (Utilities.IsValid(particleField))
-            particleField.Stop();
         RequestSerialization();
     }
 
