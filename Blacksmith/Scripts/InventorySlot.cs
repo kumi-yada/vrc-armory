@@ -218,7 +218,7 @@ public class InventorySlot : UdonSharpBehaviour
         if (elapsedMs < 0) elapsedMs = 0;
         int totalSec = elapsedMs / 1000;
 
-        if (totalSec < 60) return totalSec + "s ago";
+        if (totalSec < 600) return "recently";
         int totalMin = totalSec / 60;
         if (totalMin < 60) return totalMin + "m ago";
         int hours = totalMin / 60;
