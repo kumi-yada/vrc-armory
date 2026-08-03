@@ -87,8 +87,9 @@ public class SmitePoint : UdonSharpBehaviour
             if (Utilities.IsValid(weapon))
                 weapon.RecordHit(accuracy);
 
-            if (Utilities.IsValid(anvil))
+            if (Utilities.IsValid(anvil)) {
                 anvil.SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Anvil.PlaySmiteEffects), accuracy);
+            }
 
             CurrentSmiteHits++;
             RandomizeHitArea();
@@ -109,15 +110,45 @@ public class SmitePoint : UdonSharpBehaviour
     public void SetActive(bool active)
     {
         IsActive = active;
-        if (active && Utilities.IsValid(anvil))
+        if (active)
         {
-            anvil.SetActiveSmitePoint(this);
-            anvil.ShowUI();
+            if (!Utilities.IsValid(anvil))
+                DetectOverlappingAnvil();
+            if (Utilities.IsValid(anvil))
+            {
+                anvil.SetActiveSmitePoint(this);
+                anvil.ShowUI();
+            }
         }
-        else if (!active && Utilities.IsValid(anvil))
+        else if (Utilities.IsValid(anvil))
         {
             anvil.SetActiveSmitePoint(null);
             anvil.HideUI();
+            anvil = null;
+        }
+    }
+
+    private void DetectOverlappingAnvil()
+    {
+        Collider collider = GetComponent<Collider>();
+        if (collider == null) return;
+
+        Collider[] hits = Physics.OverlapBox(
+            collider.bounds.center,
+            collider.bounds.extents,
+            collider.transform.rotation,
+            ~0,
+            QueryTriggerInteraction.Collide);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (!hits[i].name.Contains("Anvil")) continue;
+            var hitAnvil = hits[i].GetComponent<Anvil>();
+            if (Utilities.IsValid(hitAnvil))
+            {
+                anvil = hitAnvil;
+                return;
+            }
         }
     }
 
