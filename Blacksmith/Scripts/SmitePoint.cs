@@ -108,10 +108,11 @@ public class SmitePoint : UdonSharpBehaviour
         return hit;
     }
 
-    private void Missed() {
+    private void Missed()
+    {
         if (Utilities.IsValid(weapon))
             weapon.RecordHit(0f);
-        if (Utilities.IsValid(anvil)) {
+        if (Utilities.IsValid(anvil))
             anvil.SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Anvil.PlaySmiteEffects), 0f);
     }
 
