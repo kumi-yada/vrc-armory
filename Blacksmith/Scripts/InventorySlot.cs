@@ -225,12 +225,11 @@ public class InventorySlot : UdonSharpBehaviour
     private string GetQualityLabel(float q)
     {
         if (itemIndex == -1) return "";
-        if (q >= 0.9f) return "Masterwork";
-        if (q >= 0.75f) return "Excellent";
-        if (q >= 0.6f) return "Good";
-        if (q >= 0.4f) return "Fair";
-        if (q >= 0.2f) return "Poor";
-        return "Ruined";
+        if (q >= 0.9f) return "Perfect";
+        if (q >= 0.7f) return "Excellent";
+        if (q >= 0.5f) return "Good";
+        if (q >= 0.2f) return "Fair";
+        return "Poor";
     }
 
     private void UpdateFinishDateText()

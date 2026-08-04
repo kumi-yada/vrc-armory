@@ -10,21 +10,27 @@ public class Racket : UdonSharpBehaviour
 
     private void FindStorage()
     {
-        GameObject[] playerObjects = Networking.LocalPlayer.GetPlayerObjects();
-        foreach (GameObject po in playerObjects)
-        {
-            storage = po.GetComponentInChildren<Storage>();
-            if (Utilities.IsValid(storage)) return;
-        }
+        storage = Find(Networking.LocalPlayer);
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (!Networking.IsOwner(gameObject)) return;
-        if (!Utilities.IsValid(storage)) FindStorage();
         if (!Utilities.IsValid(storage)) return;
 
         SmiteWeapon weapon = other.GetComponent<SmiteWeapon>();
         storage.StoreItem(weapon);
+    }
+
+    private Storage Find(VRCPlayerApi player)
+    {
+        var objects = Networking.GetPlayerObjects(player);
+        for (int i = 0; i < objects.Length; i++)
+        {
+            if (!Utilities.IsValid(objects[i])) continue;
+            Storage foundScript = objects[i].GetComponentInChildren<Storage>();
+            if (Utilities.IsValid(foundScript)) return foundScript;
+        }
+        return null;
     }
 }

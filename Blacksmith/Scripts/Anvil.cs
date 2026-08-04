@@ -29,6 +29,9 @@ public class Anvil : UdonSharpBehaviour
     private Color flashColor;
     private Color originalFillColor;
 
+    private float resultDisplayTimer;
+    private string resultLabelText;
+
     void Start()
     {
         if (Utilities.IsValid(uiCanvas))
@@ -64,9 +67,21 @@ public class Anvil : UdonSharpBehaviour
         flashColor = hit ? Color.green : Color.red;
     }
 
+    private string GetAccuracyLabel(float accuracy)
+    {
+        if (accuracy >= 0.9f) return "Perfect";
+        if (accuracy >= 0.7f) return "Excellent";
+        if (accuracy >= 0.5f) return "Good";
+        if (accuracy >= 0.2f) return "Fair";
+        return "Poor";
+    }
+
     [NetworkCallable]
     public void PlaySmiteEffects(float accuracy)
     {
+        resultDisplayTimer = 1.5f;
+        resultLabelText = GetAccuracyLabel(accuracy);
+
         if (accuracy >= 0.6f)
         {
             if (Utilities.IsValid(hitParticles))
@@ -100,16 +115,25 @@ public class Anvil : UdonSharpBehaviour
 
         if (Utilities.IsValid(statusText))
         {
-            bool weaponValid = Utilities.IsValid(activeSmitePoint.weapon);
-            bool isOptimal = weaponValid && activeSmitePoint.weapon.IsHeatOptimal();
-            if (isOptimal)
+            if (resultDisplayTimer > 0f)
             {
-                statusText.gameObject.SetActive(false);
+                resultDisplayTimer -= Time.deltaTime;
+                statusText.gameObject.SetActive(true);
+                statusText.text = resultLabelText;
             }
             else
             {
-                statusText.gameObject.SetActive(true);
-                statusText.text = "Too Cold";
+                bool weaponValid = Utilities.IsValid(activeSmitePoint.weapon);
+                bool isOptimal = weaponValid && activeSmitePoint.weapon.IsHeatOptimal();
+                if (isOptimal)
+                {
+                    statusText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    statusText.gameObject.SetActive(true);
+                    statusText.text = "Too Cold";
+                }
             }
         }
 

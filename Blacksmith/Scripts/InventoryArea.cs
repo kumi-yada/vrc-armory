@@ -30,7 +30,6 @@ public class InventoryArea : UdonSharpBehaviour
         }
 
         storage.SetMode(mode);
-        storage.gameObject.SetActive(true);
         Debug.Log($"[InventoryArea] Player {player.displayName} entered inventory area, showing storage {storage.name} in mode {mode}");
 
         if (Utilities.IsValid(displayTransform))
