@@ -129,10 +129,15 @@ public class Anvil : UdonSharpBehaviour
                 {
                     statusText.gameObject.SetActive(false);
                 }
+                else if (weaponValid)
+                {
+                    statusText.gameObject.SetActive(true);
+                    statusText.text = activeSmitePoint.weapon.IsHeatTooHot() ? "Too Hot" : "Too Cold";
+                }
                 else
                 {
                     statusText.gameObject.SetActive(true);
-                    statusText.text = "Too Cold";
+                    statusText.text = "";
                 }
             }
         }

@@ -18,7 +18,8 @@ public class SmiteWeapon : UdonSharpBehaviour
     [System.NonSerialized] public int spawnItemIndex;
     [SerializeField] private float heatRate = 100f;
     [SerializeField] [UdonSynced] public float coolRate = 3f;
-    [SerializeField] private float minOptimalHeat = 562.5f;
+    [SerializeField] private float minOptimalHeat = 600f;
+    [SerializeField] private float maxOptimalHeat = 800f;
     [SerializeField] private float maxHeat = 1000f;
     [System.NonSerialized] public float defaultCoolRate;
 
@@ -323,6 +324,7 @@ public class SmiteWeapon : UdonSharpBehaviour
         forge.heatSlider.value = norm;
 
         float low = minOptimalHeat / maxHeat;
+        float high = maxOptimalHeat / maxHeat;
 
         bool leftToRight = forge.heatSlider.direction == Slider.Direction.LeftToRight;
         bool bottomToTop = forge.heatSlider.direction == Slider.Direction.BottomToTop;
@@ -342,6 +344,22 @@ public class SmiteWeapon : UdonSharpBehaviour
                 forge.optimalRangeMarkerLow.anchorMin = new Vector2(0f, 0f);
                 forge.optimalRangeMarkerLow.anchorMax = new Vector2(1f, 0f);
                 forge.optimalRangeMarkerLow.anchoredPosition = new Vector2(0f, low * sliderHeight);
+            }
+        }
+
+        if (forge.optimalRangeMarkerHigh != null)
+        {
+            if (leftToRight)
+            {
+                forge.optimalRangeMarkerHigh.anchorMin = new Vector2(high, 0f);
+                forge.optimalRangeMarkerHigh.anchorMax = new Vector2(high, 1f);
+                forge.optimalRangeMarkerHigh.anchoredPosition = Vector2.zero;
+            }
+            else if (bottomToTop)
+            {
+                forge.optimalRangeMarkerHigh.anchorMin = new Vector2(0f, 0f);
+                forge.optimalRangeMarkerHigh.anchorMax = new Vector2(1f, 0f);
+                forge.optimalRangeMarkerHigh.anchoredPosition = new Vector2(0f, high * sliderHeight);
             }
         }
     }
@@ -410,12 +428,17 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     public bool IsHeatOptimal()
     {
-        return currentHeat >= minOptimalHeat;
+        return currentHeat >= minOptimalHeat && currentHeat <= maxOptimalHeat;
     }
 
     public bool IsHeatTooCold()
     {
         return currentHeat < minOptimalHeat;
+    }
+
+    public bool IsHeatTooHot()
+    {
+        return currentHeat > maxOptimalHeat;
     }
 
     public SmitePoint GetActiveSmitePoint()
@@ -474,7 +497,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     {
         if (!Networking.IsOwner(gameObject)) return;
         if (isCompleted) return;
-        Debug.Log("SmiteWeapon: RecordHit: accuracy = " + accuracy + ", currentHeat = " + currentHeat + ", minOptimalHeat = " + minOptimalHeat);
+        Debug.Log("SmiteWeapon: RecordHit: accuracy = " + accuracy + ", currentHeat = " + currentHeat + ", minOptimalHeat = " + minOptimalHeat + ", maxOptimalHeat = " + maxOptimalHeat);
 
         totalAttempts++;
 
