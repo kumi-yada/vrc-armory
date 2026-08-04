@@ -69,14 +69,11 @@ public class SmitePoint : UdonSharpBehaviour
         if (!IsActive || IsFinished)
             return false;
 
-        if (Utilities.IsValid(weapon) && !weapon.IsHeatOptimal())
-        {
-            if (Utilities.IsValid(anvil))
-                anvil.OnSmiteResult(false);
+        if (Utilities.IsValid(weapon))
             return false;
-        }
 
-        bool hit = SmiteValue >= hitAreaFrom && SmiteValue <= hitAreaTo;
+        bool optimalHeat = weapon.IsHeatOptimal();
+        bool hit = SmiteValue >= hitAreaFrom && SmiteValue <= hitAreaTo && optimalHeat;
 
         if (hit)
         {
@@ -100,11 +97,22 @@ public class SmitePoint : UdonSharpBehaviour
                     weapon.AdvanceSmiteIndex();
             }
         }
+        else
+        {
+            Missed();
+        }
 
         if (Utilities.IsValid(anvil))
             anvil.OnSmiteResult(hit);
 
         return hit;
+    }
+
+    private void Missed() {
+        if (Utilities.IsValid(weapon))
+            weapon.RecordHit(0f);
+        if (Utilities.IsValid(anvil)) {
+            anvil.SendCustomNetworkEvent(NetworkEventTarget.All, nameof(Anvil.PlaySmiteEffects), 0f);
     }
 
     public void SetActive(bool active)

@@ -73,7 +73,8 @@ public class Anvil : UdonSharpBehaviour
         if (accuracy >= 0.7f) return "Excellent";
         if (accuracy >= 0.5f) return "Good";
         if (accuracy >= 0.2f) return "Fair";
-        return "Poor";
+        if (accuracy > 0f) return "Poor";
+        return "Miss";
     }
 
     [NetworkCallable]
