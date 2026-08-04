@@ -75,6 +75,13 @@ public class Leaderboard : UdonSharpBehaviour
             rows[i].Clear();
     }
 
+    private bool SortCompare(int levelA, string nameA, int levelB, string nameB)
+    {
+        if (levelA != levelB)
+            return levelA < levelB;
+        return string.Compare(nameA, nameB) > 0;
+    }
+
     private void SortEntries(string[] names, int[] levels, float[] exps)
     {
         for (int i = 1; i < levels.Length; i++)
@@ -83,7 +90,7 @@ public class Leaderboard : UdonSharpBehaviour
             int keyLevel = levels[i];
             float keyExp = exps[i];
             int j = i - 1;
-            while (j >= 0 && levels[j] < keyLevel)
+            while (j >= 0 && SortCompare(levels[j], names[j], keyLevel, keyName))
             {
                 names[j + 1] = names[j];
                 levels[j + 1] = levels[j];
