@@ -41,6 +41,12 @@ public class RecipeButton : UdonSharpBehaviour
         UpdateButtonState();
     }
 
+    public override void OnPlayerDataUpdated(VRCPlayerApi player, PlayerData.Info[] infos)
+    {
+        if (player == null || !player.isLocal) return;
+        UpdateButtonState();
+    }
+
     public void OnClick()
     {
         if (forge == null || recipeIndex < 0) return;
