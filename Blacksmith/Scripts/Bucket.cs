@@ -45,8 +45,12 @@ public class Bucket : UdonSharpBehaviour
 
         AddWeapon(weapon);
 
-        weapon.isHeated = false;
-        weapon.coolRate = coolRate;
+        if (Networking.IsOwner(weapon.gameObject))
+        {
+            weapon.isHeated = false;
+            weapon.coolRate = coolRate;
+            weapon.RequestSerialization();
+        }
     }
 
     public void OnTriggerExit(Collider other)
@@ -57,7 +61,10 @@ public class Bucket : UdonSharpBehaviour
 
         RemoveWeapon(weapon);
 
-        weapon.ResetCoolRate();
+        if (Networking.IsOwner(weapon.gameObject))
+        {
+            weapon.ResetCoolRate();
+        }
     }
 
     private void Update()

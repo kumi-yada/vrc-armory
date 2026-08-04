@@ -17,7 +17,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [SerializeField] public string recipeName;
     [System.NonSerialized] public int spawnItemIndex;
     [SerializeField] private float heatRate = 100f;
-    [SerializeField] public float coolRate = 3f;
+    [SerializeField] [UdonSynced] public float coolRate = 3f;
     [SerializeField] private float minOptimalHeat = 562.5f;
     [SerializeField] private float maxHeat = 1000f;
     [System.NonSerialized] public float defaultCoolRate;
@@ -428,7 +428,9 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     public void ResetCoolRate()
     {
+        if (!Networking.IsOwner(gameObject)) return;
         coolRate = defaultCoolRate;
+        RequestSerialization();
     }
 
     public void OnTriggerEnter(Collider other)
