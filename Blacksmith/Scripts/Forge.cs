@@ -215,7 +215,7 @@ public class Forge : UdonSharpBehaviour
     {
         if (IsMaxLevel()) return false;
         if (!Utilities.IsValid(Networking.LocalPlayer)) return false;
-        float gold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        int gold = PlayerData.GetInt(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
         return gold >= GetNextUpgradeCost();
     }
 
@@ -225,11 +225,11 @@ public class Forge : UdonSharpBehaviour
         if (IsMaxLevel()) return;
 
         int cost = GetNextUpgradeCost();
-        float gold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        int gold = PlayerData.GetInt(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
         if (gold < cost) return;
 
         int level = GetLevel();
-        PlayerData.SetFloat(BlacksmithData.GOLD_KEY, gold - cost);
+        PlayerData.SetInt(BlacksmithData.GOLD_KEY, gold - cost);
         PlayerData.SetFloat(BlacksmithData.FORGE_LEVEL_KEY, level + 1);
         Debug.Log("Forge: UpgradeForge: level " + level + " -> " + (level + 1) + " cost=" + cost);
     }

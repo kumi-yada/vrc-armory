@@ -140,9 +140,9 @@ public class InventorySlot : UdonSharpBehaviour
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
         if (!Utilities.IsValid(weapon)) return;
 
-        float price = Mathf.CeilToInt(weapon.baseSellPrice * (1f + quality));
-        float currentGold = PlayerData.GetFloat(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
-        PlayerData.SetFloat(BlacksmithData.GOLD_KEY, currentGold + price);
+        int price = Mathf.CeilToInt(weapon.baseSellPrice * (1f + quality));
+        int currentGold = PlayerData.GetInt(Networking.LocalPlayer, BlacksmithData.GOLD_KEY);
+        PlayerData.SetInt(BlacksmithData.GOLD_KEY, currentGold + price);
         Debug.Log("InventorySlot: SellItem: slot=" + slotIndex + " item=" + weapon.recipeName + " price=" + price + " newGold=" + (currentGold + price));
 
         Clear();

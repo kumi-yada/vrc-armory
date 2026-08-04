@@ -178,9 +178,6 @@ MonoBehaviour:
   finishDateText: {fileID: 2164362942140373819}
   sellPriceText: {fileID: 3454913432924827776}
   displayStatusText: {fileID: 1593934207120591326}
-  forge: {fileID: 0}
-  storage: {fileID: 0}
-  slotIndex: 0
 --- !u!114 &2561576747204003783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,6 +409,11 @@ PrefabInstance:
     - target: {fileID: 3480006331190755791, guid: 1ff6f3d35b7978f7da6b51b7f1f8eaea,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5078107613071367465, guid: 1ff6f3d35b7978f7da6b51b7f1f8eaea,
+        type: 3}
+      propertyPath: m_CullTransparentMesh
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

@@ -69,7 +69,7 @@ public class SmitePoint : UdonSharpBehaviour
         if (!IsActive || IsFinished)
             return false;
 
-        if (Utilities.IsValid(weapon))
+        if (!Utilities.IsValid(weapon))
             return false;
 
         bool optimalHeat = weapon.IsHeatOptimal();

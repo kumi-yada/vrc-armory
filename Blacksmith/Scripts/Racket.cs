@@ -16,6 +16,7 @@ public class Racket : UdonSharpBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (!Networking.IsOwner(gameObject)) return;
+        if (!Utilities.IsValid(storage)) storage = Find(Networking.LocalPlayer);
         if (!Utilities.IsValid(storage)) return;
 
         SmiteWeapon weapon = other.GetComponent<SmiteWeapon>();

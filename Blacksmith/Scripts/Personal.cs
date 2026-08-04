@@ -40,9 +40,9 @@ public class Personal : UdonSharpBehaviour
         if (levelText != null)
             levelText.text = "Player Lv." + level;
 
-        float gold = PlayerData.GetFloat(local, BlacksmithData.GOLD_KEY);
+        int gold = PlayerData.GetInt(local, BlacksmithData.GOLD_KEY);
         if (goldText != null)
-            goldText.text = Mathf.FloorToInt(gold) + "g";
+            goldText.text = gold + "g";
 
         int forgeLevel = Mathf.Max(1, (int)PlayerData.GetFloat(local, BlacksmithData.FORGE_LEVEL_KEY));
         if (forgeLevelText != null)
