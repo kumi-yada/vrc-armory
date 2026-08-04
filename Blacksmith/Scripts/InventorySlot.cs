@@ -4,6 +4,7 @@ using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 using VRC.Udon;
 using TMPro;
+using UnityEngine.UI;
 
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class InventorySlot : UdonSharpBehaviour
@@ -17,6 +18,7 @@ public class InventorySlot : UdonSharpBehaviour
     [SerializeField] private TextMeshProUGUI finishDateText;
     [SerializeField] private TextMeshProUGUI sellPriceText;
     [SerializeField] private TextMeshProUGUI displayStatusText;
+    [SerializeField] private Image weaponIconImage;
     [System.NonSerialized] public int slotIndex;
 
     public void StoreItem(int index, float q, string recipeName, int timeMs)
@@ -32,6 +34,11 @@ public class InventorySlot : UdonSharpBehaviour
         if (qualityNameText != null)
             qualityNameText.text = GetQualityLabel(q);
         UpdateFinishDateText();
+
+        Forge forge = GetForge();
+        SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(index) : null;
+        if (weaponIconImage != null)
+            weaponIconImage.sprite = weapon != null ? weapon.weaponIcon : null;
 
         RequestSerialization();
     }
@@ -59,6 +66,11 @@ public class InventorySlot : UdonSharpBehaviour
         {
             displayStatusText.text = "";
             displayStatusText.gameObject.SetActive(false);
+        }
+        if (weaponIconImage != null)
+        {
+            weaponIconImage.sprite = null;
+            weaponIconImage.gameObject.SetActive(false);
         }
 
         RequestSerialization();
@@ -173,6 +185,11 @@ public class InventorySlot : UdonSharpBehaviour
             displayStatusText.text = "";
             displayStatusText.gameObject.SetActive(false);
         }
+        if (weaponIconImage != null)
+        {
+            weaponIconImage.sprite = null;
+            weaponIconImage.gameObject.SetActive(false);
+        }
     }
 
     private void RefreshUI()
@@ -193,6 +210,12 @@ public class InventorySlot : UdonSharpBehaviour
 
         if (qualityNameText != null)
             qualityNameText.text = GetQualityLabel(quality);
+
+        if (weaponIconImage != null)
+        {
+            weaponIconImage.sprite = weapon != null ? weapon.weaponIcon : null;
+            weaponIconImage.gameObject.SetActive(weapon != null && weapon.weaponIcon != null);
+        }
 
         Storage storage = GetStorage();
         bool sellMode = storage != null && storage.currentMode == Storage.MODE_SELL;

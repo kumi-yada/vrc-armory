@@ -15,6 +15,7 @@ public class SmiteWeapon : UdonSharpBehaviour
     [UdonSynced] [System.NonSerialized] private Quaternion syncedRotation;
 
     [SerializeField] public string recipeName;
+    [SerializeField] public Sprite weaponIcon;
     [System.NonSerialized] public int spawnItemIndex;
     [SerializeField] private float heatRate = 100f;
     [SerializeField] [UdonSynced] public float coolRate = 3f;

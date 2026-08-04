@@ -178,6 +178,7 @@ MonoBehaviour:
   finishDateText: {fileID: 2164362942140373819}
   sellPriceText: {fileID: 3454913432924827776}
   displayStatusText: {fileID: 1593934207120591326}
+  weaponIconImage: {fileID: 4132568741629727541}
 --- !u!114 &2561576747204003783
 MonoBehaviour:
   m_ObjectHideFlags: 0

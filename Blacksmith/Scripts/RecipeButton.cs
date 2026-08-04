@@ -14,6 +14,8 @@ public class RecipeButton : UdonSharpBehaviour
     [SerializeField] private int minimumForgeLevel = 1;
     [SerializeField] private Forge forge;
 
+    [SerializeField] private Image icon;
+
     private Button button;
     private TextMeshProUGUI label;
     private int recipeIndex = -1;
@@ -23,8 +25,8 @@ public class RecipeButton : UdonSharpBehaviour
         button = GetComponent<Button>();
         label = GetComponentInChildren<TextMeshProUGUI>();
 
-        if (recipe != null && label != null)
-            label.text = recipe.recipeName;
+        if (recipe != null && icon != null)
+            icon.sprite = recipe.weaponIcon;
 
         if (forge != null)
         {

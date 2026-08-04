@@ -62,6 +62,9 @@ public class IconGenerator : MonoBehaviour {
 			rawIcon = AssetPreview.GetAssetPreview (targetObj);
 			icon = rawIcon as Texture2D;
 
+            if (icon != null)
+                icon = RemoveBackground(icon);
+
             if (overlayIcons.Count != 0)
             {
                 if(icon == null)
@@ -110,6 +113,43 @@ public class IconGenerator : MonoBehaviour {
         // This will fix the *need to click out of the engine* to see the generated icons bug.
         AssetDatabase.Refresh();
 	}
+
+    private Texture2D RemoveBackground(Texture2D source)
+    {
+        var corners = new Color[] {
+            source.GetPixel(0, 0),
+            source.GetPixel(source.width - 1, 0),
+            source.GetPixel(0, source.height - 1),
+            source.GetPixel(source.width - 1, source.height - 1)
+        };
+
+        Color bgColor = corners[0];
+        float bestScore = float.MaxValue;
+        foreach (Color c in corners)
+        {
+            float score = 0f;
+            foreach (Color other in corners)
+                score += ColorDistance(c, other);
+            if (score < bestScore) { bestScore = score; bgColor = c; }
+        }
+
+        float threshold = 0.08f;
+        var result = new Texture2D(source.width, source.height, TextureFormat.ARGB32, false);
+        var pixels = source.GetPixels();
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            if (ColorDistance(pixels[i], bgColor) < threshold)
+                pixels[i] = Color.clear;
+        }
+        result.SetPixels(pixels);
+        result.Apply();
+        return result;
+    }
+
+    private float ColorDistance(Color a, Color b)
+    {
+        return Mathf.Abs(a.r - b.r) + Mathf.Abs(a.g - b.g) + Mathf.Abs(a.b - b.b);
+    }
 
     private void GetOverlayTextures()
     {
