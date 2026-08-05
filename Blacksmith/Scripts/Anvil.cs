@@ -7,7 +7,7 @@ using VRC.Udon.Common.Interfaces;
 using VRC.SDK3.UdonNetworkCalling;
 using TMPro;
 
-[UdonBehaviourSyncMode(BehaviourSyncMode.None)]
+[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class Anvil : UdonSharpBehaviour
 {
     [Header("UI")]

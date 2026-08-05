@@ -5,3 +5,8 @@
 - [VizVid Player](https://booth.pm/en/items/5056077)
 - [QVPen](https://booth.pm/ja/items/1555789)
 - [Mochie Water Shader](https://github.com/MochiesCode/Mochies-Unity-Shaders)
+
+### Textures
+
+- [Floor](https://freestylized.com/material/ground_tiles_01/)
+- [Walls](https://freestylized.com/material/bricks_wall_15/)
