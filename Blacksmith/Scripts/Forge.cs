@@ -85,7 +85,6 @@ public class Forge : UdonSharpBehaviour
         recipeDetailsPage.SetActive(true);
         if (Utilities.IsValid(recipeNameText))
             recipeNameText.text = currentItem.recipeName;
-            Debug.Log("Forge: SelectRecipe: selected recipe = " + currentItem.recipeName);
     }
 
     public void ClearCurrentItem()
@@ -106,7 +105,7 @@ public class Forge : UdonSharpBehaviour
         if (!Networking.IsOwner(gameObject)) return;
 
         if (Utilities.IsValid(currentItem))
-            currentItem.gameObject.SetActive(false);
+            currentItem.Hide();
         ClearCurrentItem();
     }
 
@@ -114,9 +113,6 @@ public class Forge : UdonSharpBehaviour
     {
         if (!Utilities.IsValid(spawnItemContainer) || selectedRecipeIndex < 0 || selectedRecipeIndex >= spawnItemContainer.childCount)
             return;
-
-        if (Utilities.IsValid(currentItem))
-            currentItem.gameObject.SetActive(false);
 
         Transform child = spawnItemContainer.GetChild(selectedRecipeIndex);
         GameObject go = child.gameObject;

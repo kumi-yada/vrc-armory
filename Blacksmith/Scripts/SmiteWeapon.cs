@@ -164,8 +164,8 @@ public class SmiteWeapon : UdonSharpBehaviour
         if (!isHeld)
             transform.SetPositionAndRotation(syncedPosition, syncedRotation);
 
-        if (isCompleted && !isDisplayed)
-            HidePosition();
+        // if (isCompleted && !isDisplayed)
+        //     HidePosition();
 
         UpdateHeatGlow();
         UpdateBlobShape();
@@ -228,6 +228,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
         activeSlot = null;
         isDisplayed = false;
+        isHeated = false;
 
         if (pickup != null)
         {
@@ -318,8 +319,7 @@ public class SmiteWeapon : UdonSharpBehaviour
 
     private void UpdateHeatSlider()
     {
-        if (forge == null) return;
-        if (forge.heatSlider == null) return;
+        if (forge == null || forge.heatSlider == null || !isHeated) return;
 
         float norm = currentHeat / maxHeat;
         forge.heatSlider.value = norm;

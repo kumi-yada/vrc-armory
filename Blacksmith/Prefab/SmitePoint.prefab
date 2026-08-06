@@ -59,12 +59,6 @@ MonoBehaviour:
   smiteSpeed: 100
   maxSmiteHits: 3
   hitRange: 20
-  perfectParticles: {fileID: 0}
-  perfectAudio: {fileID: 0}
-  goodParticles: {fileID: 0}
-  goodAudio: {fileID: 0}
-  hitParticles: {fileID: 0}
-  hitAudio: {fileID: 0}
 --- !u!114 &4765492555809021636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,5 +104,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.01
+  m_Radius: 0.05
   m_Center: {x: 0, y: 0, z: 0}

@@ -117,7 +117,7 @@ public class InventorySlot : UdonSharpBehaviour
         if (itemIndex == -1) return;
         Forge forge = GetForge();
         SmiteWeapon weapon = forge != null ? forge.GetItemByIndex(itemIndex) : null;
-        if (!Utilities.IsValid(weapon) || !weapon.isDisplayed) return;
+        if (!Utilities.IsValid(weapon)) return;
         weapon.Hide();
         RefreshUI();
     }
